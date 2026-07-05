@@ -4,7 +4,6 @@
   "private": true,
   "description": "Web app ke gio giao vien THCS Tay Phu, deployable on Vercel.",
   "scripts": {
-    "build": "node -e \"console.log('Static app ready in public/')\"",
-    "start": "node server.js"
+    "build": "node -e \"console.log('Static app ready in public/')\""
   }
 }
