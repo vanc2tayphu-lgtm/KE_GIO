@@ -38,28 +38,81 @@ const schoolWeeks = [
   { n: 35, start: "2026-05-18", end: "2026-05-23", note: "Kết thúc học kỳ II" }
 ];
 
-const teachers = [
-  {
-    id: "nguyen-thi-thanh-van",
-    name: "Nguyễn Thị Thanh Vân",
+const defaultTeacherInfo = {
+  subject: "",
+  assignment: "",
+  rankCode: "V.07.04.31",
+  salaryLevel: "",
+  salaryCoeff: "",
+  weeklyNorm: 19
+};
+
+const teacherNames = [
+  "Nguyễn Duy Hoài",
+  "Đinh Thị Oanh",
+  "Nguyễn Thị Quyên",
+  "Võ Thị Kiều Tiên",
+  "Hồ Minh Triều",
+  "Hồ Ngọc Đệ",
+  "Tô Thị Thùy Dung",
+  "Võ Thị Kim Nga",
+  "Hà Thị Hoàng Oanh",
+  "Lê Thị Mỹ Phụng",
+  "Nguyễn Thị Thanh Vân",
+  "Trần Thị Vân",
+  "Trần Thị Thu Hồ",
+  "Trương Thị Kim Liễu",
+  "Lê Thị Xuân Mai",
+  "Nguyễn Ánh Nguyệt",
+  "Lê Thị Ngọc Giàu",
+  "Võ Văn Hà",
+  "Nguyễn Thị Thu Hà",
+  "Nguyễn Thị Phước Hoài",
+  "Châu Thị Cẩm Hồng",
+  "Võ Thị Út Thuỷ",
+  "Nguyễn Thị Bích Tuyền",
+  "Lê Văn Cường",
+  "Nguyễn Thị Tú Huyên",
+  "Võ Văn Tuấn Nhỏ",
+  "Lê Văn Phúc",
+  "Trần Hưng Việt",
+  "Nguyễn Thái Thị Thu An",
+  "Nguyễn Thị Nhựt Băng",
+  "Võ Thị Lợi",
+  "Dương Văn Nghiêm",
+  "Trịnh Thị Nhung",
+  "Thcs Tây Phú",
+  "Phạm Phú Phúc",
+  "Trương Thanh Phương",
+  "Bùi Lê Phạm Thị Diễm Phương",
+  "Lê Thành Thạo",
+  "Nguyễn Sỹ Tuấn"
+];
+
+const teacherOverrides = {
+  "nguyen-thi-thanh-van": {
     subject: "PHÂN MÔN LỊCH SỬ",
     assignment: "Dạy 7A3",
-    rankCode: "V.07.04.31",
     salaryLevel: "3/8",
-    salaryCoeff: "4.68",
-    weeklyNorm: 19
+    salaryCoeff: "4.68"
   },
-  {
-    id: "tran-thi-van",
-    name: "Trần Thị Vân",
+  "tran-thi-van": {
     subject: "GDCD",
     assignment: "Dạy GDCD K6,7,8,9; HĐTN 6",
-    rankCode: "V.07.04.31",
     salaryLevel: "3",
-    salaryCoeff: "4.68",
-    weeklyNorm: 19
+    salaryCoeff: "4.68"
   }
-];
+};
+
+const teachers = teacherNames.map((name) => {
+  const id = slugifyVietnamese(name);
+  return {
+    id,
+    name,
+    ...defaultTeacherInfo,
+    ...(teacherOverrides[id] || {})
+  };
+});
 
 const els = {
   monthSelect: document.querySelector("#monthSelect"),
@@ -90,6 +143,17 @@ let state = {
   allowances: [],
   entries: []
 };
+
+function slugifyVietnamese(value) {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 function dateOnly(value) {
   return new Date(`${value}T00:00:00`);
@@ -245,6 +309,20 @@ function setProfileInputs() {
   els.weeklyNorm.value = state.profile.weeklyNorm || 0;
 }
 
+function updateCurrentTeacherMetadata() {
+  const teacher = teachers.find((item) => item.id === state.teacherId);
+  if (teacher) Object.assign(teacher, state.profile);
+  const option = [...els.teacherSelect.options].find((item) => item.value === state.teacherId);
+  if (option) option.textContent = state.profile.name || option.textContent;
+}
+
+function refreshLiveOutputs() {
+  syncProfileFromInputs();
+  updateCurrentTeacherMetadata();
+  renderSummary();
+  renderPreview();
+}
+
 function numberValue(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
@@ -370,9 +448,14 @@ function renderAllowances() {
     const [nameInput, periodInput, removeBtn] = row.children;
     nameInput.addEventListener("input", () => {
       state.allowances[index].name = nameInput.value;
-      renderAll();
+      refreshLiveOutputs();
     });
+    nameInput.addEventListener("change", renderAll);
     periodInput.addEventListener("input", () => {
+      state.allowances[index].periods = periodInput.value;
+      refreshLiveOutputs();
+    });
+    periodInput.addEventListener("change", () => {
       state.allowances[index].periods = periodInput.value;
       renderAll();
     });
@@ -413,20 +496,23 @@ function renderWeeks() {
       <td><input class="note-input" data-field="note" value="${escapeAttr(row.note || "")}" /></td>
     `;
     tr.querySelectorAll("[data-field]").forEach((input) => {
-      input.addEventListener("input", () => {
+      const updateEntry = () => {
         state.entries[index][input.dataset.field] = input.value;
         if (input.dataset.field === "status" && input.value !== "teaching") {
           state.entries[index].regular = 0;
           state.entries[index].extra = 0;
         }
-        renderAll();
+      };
+      input.addEventListener("input", () => {
+        updateEntry();
+        if (input.dataset.field === "status") {
+          renderAll();
+          return;
+        }
+        refreshLiveOutputs();
       });
       input.addEventListener("change", () => {
-        state.entries[index][input.dataset.field] = input.value;
-        if (input.dataset.field === "status" && input.value !== "teaching") {
-          state.entries[index].regular = 0;
-          state.entries[index].extra = 0;
-        }
+        updateEntry();
         renderAll();
       });
     });
@@ -681,6 +767,7 @@ function resetForSelection() {
   state.profile = { ...teacher };
   loadCurrentRecord();
   setProfileInputs();
+  updateCurrentTeacherMetadata();
   renderAll();
 }
 
@@ -1320,7 +1407,8 @@ function init() {
     resetForSelection();
   });
   ["teacherName", "subject", "assignment", "rankCode", "salaryLevel", "salaryCoeff", "weeklyNorm"].forEach((key) => {
-    els[key].addEventListener("input", renderAll);
+    els[key].addEventListener("input", refreshLiveOutputs);
+    els[key].addEventListener("change", renderAll);
   });
   document.querySelector("#addAllowance").addEventListener("click", () => {
     state.allowances.push({ name: "", periods: 0 });
