@@ -473,13 +473,22 @@ async function requestNewSecurityCode() {
     setSyncStatus("Chưa có Apps Script URL để gửi lại mã.", "error");
     return;
   }
-  const email = window.prompt("Nhập email đã đăng ký trong danh sách giáo viên:");
-  if (!email) return;
-  setSyncStatus("Đang gửi mã mới qua email...");
+  const teacherCode = state.profile.teacherCode || state.teacherId;
+  if (!teacherCode) {
+    setSyncStatus("Chưa chọn giáo viên để đổi mã.", "error");
+    return;
+  }
+  const email = state.profile.email || "email trong danh sách giáo viên";
+  setSyncStatus(`Đang gửi mã mới về ${email}...`);
   try {
-    const result = await requestGoogleScript(url, { action: "resetCode", email });
+    const result = await requestGoogleScript(url, {
+      action: "resetCode",
+      teacherCode,
+      teacherName: state.profile.name
+    });
     if (result.ok) {
-      setSyncStatus("Đã gửi mã mới vào email đã đăng ký.", "success");
+      localStorage.removeItem(securityCodeKey(teacherCode));
+      setSyncStatus(`Đã đổi mã. Xin vào mail ${result.email || email} để lấy mã mới.`, "success");
     } else {
       setSyncStatus(friendlyGoogleError(result.error) || "Không gửi được mã mới.", "error");
     }

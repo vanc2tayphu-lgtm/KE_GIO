@@ -93,7 +93,7 @@ function handleAction_(payload) {
     return { ok: true, sheetName: SHEET_NAME };
   }
   if (payload.action === "teachers") return teachersResponse_();
-  if (payload.action === "resetCode") return resetSecurityCode_(payload.email);
+  if (payload.action === "resetCode") return resetSecurityCode_(payload);
   if (payload.action === "upsertMonthlySummary") return upsertMonthlySummary_(payload);
   throw new Error("Unsupported action");
 }
@@ -218,7 +218,7 @@ function teachersResponse_() {
     teacherCode: teacher.teacherCode,
     name: teacher.name,
     subject: teacher.subject,
-    email: maskEmail_(teacher.email)
+    email: teacher.email
   }));
   return { ok: true, teachers };
 }
@@ -251,12 +251,15 @@ function findTeacherForPayload_(payload, teacherCode) {
     null;
 }
 
-function resetSecurityCode_(email) {
-  const cleanEmail = String(email || "").trim().toLowerCase();
-  if (!cleanEmail) throw new Error("Vui lòng nhập email.");
+function resetSecurityCode_(payload) {
+  const teacherCode = normalizeKey_(payload.teacherCode || payload.teacherId || "");
+  const cleanEmail = String(payload.email || "").trim().toLowerCase();
+  if (!teacherCode && !cleanEmail) throw new Error("Thiếu mã giáo viên để đổi mã.");
   const teachers = teacherRecords_();
-  const teacher = teachers.find((item) => item.email.toLowerCase() === cleanEmail);
-  if (!teacher) throw new Error("Email này chưa có trong danh sách giáo viên.");
+  const teacher = teachers.find((item) => teacherCode && normalizeKey_(item.teacherCode) === teacherCode) ||
+    teachers.find((item) => cleanEmail && item.email.toLowerCase() === cleanEmail);
+  if (!teacher) throw new Error("Không tìm thấy giáo viên trong danh sách.");
+  if (!teacher.email) throw new Error("Giáo viên này chưa có email trong danh sách.");
   const newCode = randomSecurityCode_();
   getTeacherSheet_().getRange(teacher.row, 5).setValue(newCode);
   MailApp.sendEmail({
@@ -265,7 +268,7 @@ function resetSecurityCode_(email) {
     subject: "Mã bảo mật kê giờ THCS Tây Phú",
     body: `Kính gửi ${teacher.name},\n\nMã bảo mật kê giờ mới của thầy/cô là: ${newCode}\n\nVui lòng không chia sẻ mã này cho người khác.\n\nTHCS Tây Phú`
   });
-  return { ok: true };
+  return { ok: true, email: teacher.email };
 }
 
 function ensureSheetLayout_(sheet) {
