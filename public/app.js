@@ -287,6 +287,14 @@ function setSyncStatus(message, type = "") {
   els.syncStatus.className = `sync-status${type ? ` ${type}` : ""}`;
 }
 
+function friendlyGoogleError(message) {
+  const text = String(message || "");
+  if (text.includes("MailApp.sendEmail") || text.includes("script.send_mail")) {
+    return "Apps Script chưa được cấp quyền gửi mail. Vào Apps Script, chọn hàm setupAuthorization, bấm Run và cấp quyền, sau đó Deploy lại Web App.";
+  }
+  return text;
+}
+
 function buildMonthlySummaryPayload() {
   const { totals } = calculate();
   return {
@@ -328,7 +336,7 @@ async function syncMonthlySummaryToGoogleSheet() {
       setSyncStatus("Đã gửi tổng hợp tháng lên Google Sheet.", "success");
       return true;
     }
-    setSyncStatus(result.error || "Mã bảo mật không đúng.", "error");
+    setSyncStatus(friendlyGoogleError(result.error) || "Mã bảo mật không đúng.", "error");
     return false;
   } catch (error) {
     setSyncStatus("Không gửi được Google Sheet. Kiểm tra lại Apps Script URL.", "error");
@@ -418,7 +426,7 @@ async function loadTeacherDirectoryFromGoogleSheet() {
   try {
     const result = await requestGoogleScript(url, { action: "teachers" });
     if (!result.ok || !Array.isArray(result.teachers)) {
-      setSyncStatus(result.error || "Không tải được danh sách giáo viên.", "error");
+      setSyncStatus(friendlyGoogleError(result.error) || "Không tải được danh sách giáo viên.", "error");
       return;
     }
     teachers = result.teachers.map((teacher) => ({
@@ -454,7 +462,7 @@ async function requestNewSecurityCode() {
     if (result.ok) {
       setSyncStatus("Đã gửi mã mới vào email đã đăng ký.", "success");
     } else {
-      setSyncStatus(result.error || "Không gửi được mã mới.", "error");
+      setSyncStatus(friendlyGoogleError(result.error) || "Không gửi được mã mới.", "error");
     }
   } catch (error) {
     setSyncStatus("Không gửi được mã mới. Kiểm tra lại Apps Script URL.", "error");

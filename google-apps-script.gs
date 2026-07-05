@@ -53,6 +53,13 @@ const VISIBLE_COLS = FIRST_MONTH_COL - 1 + MONTHS.length * 3;
 const TEACHER_KEY_COL = VISIBLE_COLS + 1;
 const UPDATED_AT_COL = VISIBLE_COLS + 2;
 
+function setupAuthorization() {
+  ensureTeacherDirectory_();
+  getSummarySheet_();
+  MailApp.getRemainingDailyQuota();
+  return "OK - Đã sẵn sàng cấp quyền gửi mail";
+}
+
 function doPost(e) {
   const lock = LockService.getDocumentLock();
   lock.waitLock(30000);
