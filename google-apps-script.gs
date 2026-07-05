@@ -18,6 +18,33 @@ const TEACHER_SEED_NAMES = [
   "Trịnh Thị Nhung", "Thcs Tây Phú", "Phạm Phú Phúc", "Trương Thanh Phương",
   "Bùi Lê Phạm Thị Diễm Phương", "Lê Thành Thạo", "Nguyễn Sỹ Tuấn"
 ];
+const TEACHER_EMAILS = {
+  "Hồ Minh Triều": "c2tayphuts_trieu@angiang.edu.vn",
+  "Lê Văn Cường": "c2tayphuts_cuong@angiang.edu.vn",
+  "Nguyễn Duy Hoài": "c2tayphuts_hoai@angiang.edu.vn",
+  "Lê Thị Xuân Mai": "c2tayphuts_mai@angiang.edu.vn",
+  "Nguyễn Ánh Nguyệt": "c2tayphuts_nguyet@angiang.edu.vn",
+  "Trương Thị Kim Liễu": "c2tayphuts_lieu@angiang.edu.vn",
+  "Trần Thị Thu Hồ": "c2tayphuts_ho@angiang.edu.vn",
+  "Nguyễn Thị Thanh Vân": "c2tayphuts_van@angiang.edu.vn",
+  "Trần Thị Vân": "c2tayphuts_thivan@angiang.edu.vn",
+  "Võ Thị Kim Nga": "c2tayphuts_nga@angiang.edu.vn",
+  "Đinh Thị Oanh": "c2tayphuts_oanh@angiang.edu.vn",
+  "Hồ Ngọc Đệ": "c2tayphuts_de@angiang.edu.vn",
+  "Võ Thị Kiều Tiên": "c2tayphuts_ktien@angiang.edu.vn",
+  "Nguyễn Thị Quyên": "c2tayphuts_quyen@angiang.edu.vn",
+  "Võ Văn Hà": "c2tayphuts_ha@angiang.edu.vn",
+  "Nguyễn Thị Thu Hà": "c2tayphuts_thuha@angiang.edu.vn",
+  "Võ Thị Út Thuỷ": "c2tayphuts_thuy@angiang.edu.vn",
+  "Châu Thị Cẩm Hồng": "c2tayphuts_hong@angiang.edu.vn",
+  "Nguyễn Thị Bích Tuyền": "c2tayphuts_tuyen@angiang.edu.vn",
+  "Nguyễn Thị Phước Hoài": "c2tayphuts_phuochoai@angiang.edu.vn",
+  "Lê Thị Ngọc Giàu": "c2tayphuts_giau@angiang.edu.vn",
+  "Trần Hưng Việt": "c2tayphuts_viet@angiang.edu.vn",
+  "Lê Văn Phúc": "c2tayphuts_phuc@angiang.edu.vn",
+  "Nguyễn Thị Tú Huyên": "c2tayphuts_huyen@angiang.edu.vn",
+  "Võ Văn Tuấn Nhỏ": "c2tayphuts_nho@angiang.edu.vn"
+};
 
 const HEADER_ROWS = 2;
 const DATA_START_ROW = HEADER_ROWS + 1;
@@ -124,7 +151,7 @@ function ensureTeacherDirectory_() {
         String(100001 + index),
         name,
         defaultSubject_(name),
-        "",
+        teacherEmail_(name),
         randomSecurityCode_()
       ]);
     }
@@ -144,6 +171,10 @@ function ensureTeacherDirectory_() {
       }
       if (!row[4] && row[1]) {
         row[4] = randomSecurityCode_();
+        changed = true;
+      }
+      if (!row[3] && row[1] && teacherEmail_(row[1])) {
+        row[3] = teacherEmail_(row[1]);
         changed = true;
       }
     });
@@ -360,6 +391,10 @@ function defaultSubject_(name) {
   if (name === "Nguyễn Thị Thanh Vân") return "PHÂN MÔN LỊCH SỬ";
   if (name === "Trần Thị Vân") return "GDCD";
   return "";
+}
+
+function teacherEmail_(name) {
+  return TEACHER_EMAILS[String(name || "").trim()] || "";
 }
 
 function randomSecurityCode_() {

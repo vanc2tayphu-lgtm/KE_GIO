@@ -106,6 +106,34 @@ const teacherOverrides = {
   }
 };
 
+const teacherEmailOverrides = {
+  "Hồ Minh Triều": "c2tayphuts_trieu@angiang.edu.vn",
+  "Lê Văn Cường": "c2tayphuts_cuong@angiang.edu.vn",
+  "Nguyễn Duy Hoài": "c2tayphuts_hoai@angiang.edu.vn",
+  "Lê Thị Xuân Mai": "c2tayphuts_mai@angiang.edu.vn",
+  "Nguyễn Ánh Nguyệt": "c2tayphuts_nguyet@angiang.edu.vn",
+  "Trương Thị Kim Liễu": "c2tayphuts_lieu@angiang.edu.vn",
+  "Trần Thị Thu Hồ": "c2tayphuts_ho@angiang.edu.vn",
+  "Nguyễn Thị Thanh Vân": "c2tayphuts_van@angiang.edu.vn",
+  "Trần Thị Vân": "c2tayphuts_thivan@angiang.edu.vn",
+  "Võ Thị Kim Nga": "c2tayphuts_nga@angiang.edu.vn",
+  "Đinh Thị Oanh": "c2tayphuts_oanh@angiang.edu.vn",
+  "Hồ Ngọc Đệ": "c2tayphuts_de@angiang.edu.vn",
+  "Võ Thị Kiều Tiên": "c2tayphuts_ktien@angiang.edu.vn",
+  "Nguyễn Thị Quyên": "c2tayphuts_quyen@angiang.edu.vn",
+  "Võ Văn Hà": "c2tayphuts_ha@angiang.edu.vn",
+  "Nguyễn Thị Thu Hà": "c2tayphuts_thuha@angiang.edu.vn",
+  "Võ Thị Út Thuỷ": "c2tayphuts_thuy@angiang.edu.vn",
+  "Châu Thị Cẩm Hồng": "c2tayphuts_hong@angiang.edu.vn",
+  "Nguyễn Thị Bích Tuyền": "c2tayphuts_tuyen@angiang.edu.vn",
+  "Nguyễn Thị Phước Hoài": "c2tayphuts_phuochoai@angiang.edu.vn",
+  "Lê Thị Ngọc Giàu": "c2tayphuts_giau@angiang.edu.vn",
+  "Trần Hưng Việt": "c2tayphuts_viet@angiang.edu.vn",
+  "Lê Văn Phúc": "c2tayphuts_phuc@angiang.edu.vn",
+  "Nguyễn Thị Tú Huyên": "c2tayphuts_huyen@angiang.edu.vn",
+  "Võ Văn Tuấn Nhỏ": "c2tayphuts_nho@angiang.edu.vn"
+};
+
 let teachers = teacherNames.map((name, index) => {
   const id = slugifyVietnamese(name);
   return {
@@ -113,6 +141,7 @@ let teachers = teacherNames.map((name, index) => {
     ...defaultTeacherInfo,
     teacherCode: `GV${String(index + 1).padStart(4, "0")}`,
     name,
+    email: teacherEmailOverrides[name] || "",
     ...(teacherOverrides[id] || {})
   };
 });
