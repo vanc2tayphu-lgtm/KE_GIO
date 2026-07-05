@@ -766,7 +766,21 @@ function summaryWorksheetXml(teacherList, title) {
     });
   });
 
-  const rowCount = Math.max(5, 4 + teacherList.length);
+  const totalRow = 5 + teacherList.length;
+  set(`B${totalRow}`, "TỔNG", 16);
+  months.forEach((month, monthIndex) => {
+    const col = 4 + monthIndex * 3;
+    for (let offset = 0; offset < 3; offset += 1) {
+      const letter = colName(col + offset);
+      cells.set(`${letter}${totalRow}`, {
+        value: `SUM(${letter}5:${letter}${Math.max(5, totalRow - 1)})`,
+        style: 16,
+        type: "f"
+      });
+    }
+  });
+
+  const rowCount = Math.max(5, totalRow);
   const rows = Array.from({ length: rowCount }, (_, i) => {
     const r = i + 1;
     const rowCells = [];
@@ -990,7 +1004,7 @@ function worksheetXml() {
   <dimension ref="A1:N79"/>
   <sheetViews><sheetView workbookViewId="0"/></sheetViews>
   <sheetFormatPr defaultRowHeight="15"/>
-  <cols>${["8.7265625","4.7265625","13","5.26953125","4.81640625","6.1796875","7","7.90","5.7265625","7.89","8.11","8.11","6.89","9.5"]
+  <cols>${["8.7265625","4.7265625","13","5.26953125","4.81640625","6.1796875","7","8.50","5.7265625","7.89","8.11","8.11","6.89","9.5"]
     .map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>
   <sheetData>${sheetData}</sheetData>
   <mergeCells count="${xlsxMerges().length}">${xlsxMerges().map((ref) => `<mergeCell ref="${ref}"/>`).join("")}</mergeCells>
@@ -1019,6 +1033,7 @@ function xlsxMerges() {
 function cellXml(addr, cell) {
   const style = cell.style ? ` s="${cell.style}"` : "";
   if (cell.value === "" || cell.value === null || cell.value === undefined) return `<c r="${addr}"${style}/>`;
+  if (cell.type === "f") return `<c r="${addr}"${style}><f>${escapeXml(String(cell.value))}</f></c>`;
   if (cell.type === "n" && cell.value !== "") return `<c r="${addr}"${style}><v>${Number(cell.value)}</v></c>`;
   return `<c r="${addr}" t="inlineStr"${style}><is><t xml:space="preserve">${escapeXml(String(cell.value))}</t></is></c>`;
 }
