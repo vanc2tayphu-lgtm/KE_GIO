@@ -361,7 +361,7 @@ async function syncMonthlySummaryToGoogleSheet() {
   const session = getLoginSession();
   const securityCode = session?.teacherCode === teacherCode ? session.securityCode : "";
   if (!securityCode) {
-    setSyncStatus("Vui lòng đăng nhập bằng email và mã bảo mật trước khi lưu.", "error");
+    setSyncStatus("Vui lòng đăng nhập bằng email và mật khẩu trước khi lưu.", "error");
     return false;
   }
 
@@ -564,7 +564,7 @@ async function loginTeacher() {
     return;
   }
   if (!/^\d{6}$/.test(securityCode)) {
-    setSyncStatus("Vui lòng nhập mã bảo mật 6 chữ số.", "error");
+    setSyncStatus("Vui lòng nhập mật khẩu 6 chữ số.", "error");
     return;
   }
   setSyncStatus("Đang đăng nhập...");
@@ -590,7 +590,7 @@ async function requestLoginSecurityCode() {
     return;
   }
   if (!email) {
-    setSyncStatus("Nhập email ở ô Email đăng nhập, rồi bấm Quên mã để lấy mã mới.", "error");
+    setSyncStatus("Nhập email ở ô Email đăng nhập, rồi bấm Quên mật khẩu để lấy mật khẩu mới.", "error");
     return;
   }
   setSyncStatus(`Đang gửi mã mới về ${email}...`);
@@ -1694,7 +1694,7 @@ function init() {
     setSyncStatus(`Đã đăng nhập: ${session.teacher.name}.`, "success");
   } else {
     showLoggedOutTeacherSelect();
-    setSyncStatus(els.googleSheetUrl.value ? "Vui lòng đăng nhập bằng email và mã bảo mật." : "Chưa cấu hình đồng bộ.");
+    setSyncStatus(els.googleSheetUrl.value ? "Vui lòng đăng nhập bằng email và mật khẩu." : "Chưa cấu hình đồng bộ.");
     renderAll();
   }
 

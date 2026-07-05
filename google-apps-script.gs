@@ -228,12 +228,12 @@ function loginTeacher_(payload) {
   const cleanEmail = String(payload.email || "").trim().toLowerCase();
   const securityCode = String(payload.securityCode || "").trim();
   if (!cleanEmail) throw new Error("Vui lòng nhập email đăng nhập.");
-  if (!/^\d{6}$/.test(securityCode)) throw new Error("Vui lòng nhập mã bảo mật 6 chữ số.");
+  if (!/^\d{6}$/.test(securityCode)) throw new Error("Vui lòng nhập mật khẩu 6 chữ số.");
 
   const teacher = teacherRecords_().find((item) => item.email.toLowerCase() === cleanEmail);
   if (!teacher) throw new Error("Nhập sai mail.");
   if (String(teacher.securityCode) !== securityCode) {
-    throw new Error("Sai mã. Bạn có thể bấm Quên mã và vào mail trên để lấy mã.");
+    throw new Error("Sai mật khẩu. Bạn có thể bấm Quên mật khẩu và vào mail trên để lấy mật khẩu mới.");
   }
 
   return {
@@ -290,8 +290,8 @@ function resetSecurityCode_(payload) {
   MailApp.sendEmail({
     to: teacher.email,
     cc: ADMIN_EMAIL,
-    subject: "Mã bảo mật kê giờ THCS Tây Phú",
-    body: `Kính gửi ${teacher.name},\n\nMã bảo mật kê giờ mới của thầy/cô là: ${newCode}\n\nVui lòng không chia sẻ mã này cho người khác.\n\nTHCS Tây Phú`
+    subject: "Mật khẩu kê giờ THCS Tây Phú",
+    body: `Kính gửi ${teacher.name},\n\nMật khẩu kê giờ mới của thầy/cô là: ${newCode}\n\nVui lòng không chia sẻ mật khẩu này cho người khác.\n\nTHCS Tây Phú`
   });
   return { ok: true, email: teacher.email };
 }
