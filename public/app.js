@@ -368,6 +368,14 @@ function renderPreview() {
 
       <div class="mau-line">Kiêm nhiệm : (cột 7)</div>
       <table class="mau-table allowance-table">
+        <colgroup>
+          <col class="allowance-no">
+          <col class="allowance-duty">
+          <col class="allowance-from">
+          <col class="allowance-to">
+          <col class="allowance-periods">
+          <col class="allowance-note">
+        </colgroup>
         <thead>
           <tr>
             <th rowspan="2">TT</th>
@@ -606,6 +614,21 @@ function worksheetXml() {
 
   const set = (addr, value, style = 0) => cells.set(addr, { value, style });
   const setN = (addr, value, style = 0) => cells.set(addr, { value, style, type: "n" });
+  const setStyle = (addr, style) => {
+    const cell = cells.get(addr) || { value: "" };
+    cell.style = style;
+    cells.set(addr, cell);
+  };
+  const styleRange = (ref, style) => {
+    const [start, end] = ref.split(":");
+    const a = parseCellRef(start);
+    const b = parseCellRef(end || start);
+    for (let row = a.row; row <= b.row; row += 1) {
+      for (let col = a.col; col <= b.col; col += 1) {
+        setStyle(`${colName(col)}${row}`, style);
+      }
+    }
+  };
 
   set("A1", "UBND XÃ TÂY PHÚ", 1);
   set("G1", "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", 2);
@@ -728,6 +751,21 @@ function worksheetXml() {
   set("A78", '- Số tiết thừa phải ghi dấu "+" phía trước, số tiết thiếu phải ghi dấu "-" phía trước.', 23);
   set("A79", "- Cột (5) = cột (3) + cột (4); cột (8) = cột (6) - cột (7); cột (9) = cột (5) - cột (8); cột (10) = cột (5) - cột (8).", 23);
 
+  styleRange("B9:N10", 7);
+  styleRange("B11:N14", 8);
+  styleRange("A17:N18", 9);
+  styleRange("A19:N19", 10);
+  weekStarts.forEach((start) => {
+    styleRange(`A${start}:N${start + 3}`, 15);
+    styleRange(`A${start}:A${start + 3}`, 11);
+    styleRange(`B${start}:F${start}`, 12);
+    styleRange(`B${start + 1}:F${start + 2}`, 13);
+    styleRange(`B${start + 3}:F${start + 3}`, 14);
+  });
+  styleRange("A40:N40", 16);
+  styleRange("A46:N47", 19);
+  styleRange("A48:N53", 20);
+
   const rowHeights = {
     1: 16.8, 2: 17.25, 3: 12.75, 4: 18.75, 5: 23.25, 6: 24.75, 7: 20.55, 8: 22.95, 9: 15.75, 10: 29.25,
     15: 16.5, 16: 17.25, 17: 21.75, 18: 42, 40: 16.5, 41: 18.75, 42: 18.75, 43: 18.75, 44: 13.5,
@@ -752,7 +790,7 @@ function worksheetXml() {
   <dimension ref="A1:N79"/>
   <sheetViews><sheetView workbookViewId="0"/></sheetViews>
   <sheetFormatPr defaultRowHeight="15"/>
-  <cols>${[9.7265625,4.81640625,5,4.7265625,5.1796875,2.54296875,6.26953125,7.1796875,5.90625,6.1796875,13,6.7265625,5.81640625,5.6328125]
+  <cols>${[9.7265625,4.81640625,5,4.7265625,5.1796875,2.54296875,6.26953125,7.1796875,5.90625,6.7265625,6.7265625,6.7265625,5.81640625,5.6328125]
     .map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>
   <sheetData>${sheetData}</sheetData>
   <mergeCells count="${xlsxMerges().length}">${xlsxMerges().map((ref) => `<mergeCell ref="${ref}"/>`).join("")}</mergeCells>
@@ -794,6 +832,13 @@ function colName(index) {
     n = Math.floor((n - 1) / 26);
   }
   return name;
+}
+
+function parseCellRef(ref) {
+  const match = /^([A-Z]+)(\d+)$/.exec(ref);
+  if (!match) throw new Error(`Invalid cell reference: ${ref}`);
+  const col = [...match[1]].reduce((sum, ch) => sum * 26 + ch.charCodeAt(0) - 64, 0);
+  return { col, row: Number(match[2]) };
 }
 
 function stylesXml() {

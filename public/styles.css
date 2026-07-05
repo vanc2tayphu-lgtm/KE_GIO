@@ -388,6 +388,27 @@ th {
   width: calc(100% - 78px);
 }
 
+.allowance-no {
+  width: 7%;
+}
+
+.allowance-duty {
+  width: 49%;
+}
+
+.allowance-from,
+.allowance-to {
+  width: 8.5%;
+}
+
+.allowance-periods {
+  width: 9%;
+}
+
+.allowance-note {
+  width: 18%;
+}
+
 .allowance-table th,
 .allowance-table td {
   height: 24px;
