@@ -19,8 +19,8 @@ Web app tĩnh để lập bảng kê giờ theo tháng cho giáo viên Trường
 Thiết lập Vercel:
 
 - Framework Preset: `Other`
-- Build Command: để trống hoặc `npm run build`
-- Output Directory: để trống nếu dùng `vercel.json`; app được route tĩnh từ `public/`
+- Build Command: `npm run build`
+- Output Directory: `dist`
 
 ## Ghi chú an toàn dữ liệu
 
