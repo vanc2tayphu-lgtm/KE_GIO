@@ -861,7 +861,9 @@ function stylesXml() {
     borderXml("medium"),
     borderXml("medium", "medium", "medium", "dashed"),
     borderXml("medium", "medium", "dashed", "dashed"),
-    borderXml("medium", "medium", "dashed", "medium")
+    borderXml("medium", "medium", "dashed", "medium"),
+    borderXml("thin", "thin", "medium", "medium"),
+    borderXml("thin", "thin", "dashed", "dashed")
   ];
   const xf = (fontId, borderId = 0, align = "") => `<xf numFmtId="0" fontId="${fontId}" fillId="0" borderId="${borderId}" xfId="0" applyFont="1" applyBorder="${borderId ? 1 : 0}" applyAlignment="${align ? 1 : 0}">${align}</xf>`;
   const center = `<alignment horizontal="center" vertical="center"/>`;
@@ -878,18 +880,18 @@ function stylesXml() {
     xf(0, 0, center),
     xf(0, 1, centerWrap),
     xf(0, 1, center),
-    xf(5, 2, centerWrap),
-    xf(5, 2, center),
+    xf(5, 10, centerWrap),
+    xf(5, 10, center),
     xf(6, 6, centerWrap),
-    xf(6, 7, centerWrap),
-    xf(6, 8, centerWrap),
-    xf(6, 9, centerWrap),
-    xf(3, 2, center),
-    xf(5, 2, center),
+    xf(6, 3, centerWrap),
+    xf(6, 4, centerWrap),
+    xf(6, 5, centerWrap),
+    xf(3, 10, center),
+    xf(5, 10, center),
     xf(3, 0, center),
     xf(1, 0, center),
     xf(1, 1, center),
-    xf(3, 1, left),
+    xf(3, 11, left),
     xf(3, 0, `<alignment horizontal="center"/><protection/>`),
     xf(4, 0, left),
     xf(3, 0, justifyWrap)
