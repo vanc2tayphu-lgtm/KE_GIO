@@ -115,6 +115,12 @@ function findOrCreateTeacherRow_(sheet, payload) {
     const nameIndex = names.findIndex((value) => String(value) === String(payload.teacherName || ""));
     if (nameIndex >= 0) return DATA_START_ROW + nameIndex;
   }
+
+  const totalRow = getTotalRow_(sheet);
+  if (totalRow) {
+    sheet.insertRowsBefore(totalRow, 1);
+    return totalRow;
+  }
   return lastDataRow + 1;
 }
 
@@ -163,14 +169,30 @@ function teacherKey_(payload) {
 function getLastTeacherRow_(sheet) {
   const lastRow = Math.max(sheet.getLastRow(), HEADER_ROWS);
   if (lastRow < DATA_START_ROW) return HEADER_ROWS;
-  const values = sheet.getRange(DATA_START_ROW, 2, lastRow - HEADER_ROWS, 1).getValues().flat();
+  const totalRow = getTotalRow_(sheet);
+  const scanLastRow = totalRow ? totalRow - 1 : lastRow;
+  if (scanLastRow < DATA_START_ROW) return HEADER_ROWS;
+  const values = sheet.getRange(DATA_START_ROW, 2, scanLastRow - HEADER_ROWS, 1).getValues().flat();
   let last = HEADER_ROWS;
   values.forEach((value, index) => {
-    if (value && String(value).trim().toUpperCase() !== "TỔNG") {
+    if (value && !isTotalLabel_(value)) {
       last = DATA_START_ROW + index;
     }
   });
   return last;
+}
+
+function getTotalRow_(sheet) {
+  const lastRow = Math.max(sheet.getLastRow(), HEADER_ROWS);
+  if (lastRow < DATA_START_ROW) return 0;
+  const values = sheet.getRange(DATA_START_ROW, 2, lastRow - HEADER_ROWS, 1).getValues().flat();
+  const index = values.findIndex((value) => isTotalLabel_(value));
+  return index >= 0 ? DATA_START_ROW + index : 0;
+}
+
+function isTotalLabel_(value) {
+  const text = String(value || "").trim().toUpperCase();
+  return text === "TỔNG" || text === "TONG";
 }
 
 function columnLetter_(column) {
