@@ -1,0 +1,16 @@
+# dependencies / build output
+node_modules/
+.vercel/
+dist/
+build/
+
+# local/system files
+.DS_Store
+Thumbs.db
+*.log
+
+# keep source Office samples local; the xlsx sample contains legacy hidden sheet artifacts
+*.xlsx
+*.xls
+*.doc
+*.docx
