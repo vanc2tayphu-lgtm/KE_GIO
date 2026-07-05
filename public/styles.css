@@ -297,45 +297,222 @@ th {
 }
 
 .print-card {
-  background: white;
+  background: #f6f6f6;
 }
 
-.print-header,
-.signature-row {
+.print-page {
+  width: 816px;
+  min-height: 1056px;
+  margin: 0 auto 18px;
+  padding: 70px 58px 54px;
+  background: white;
+  color: #000;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 16px;
+  line-height: 1.15;
+}
+
+.mau-header {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.35fr;
   gap: 24px;
   text-align: center;
-}
-
-.print-header p {
-  margin: 4px 0;
-}
-
-#printTitle {
-  text-align: center;
   font-size: 18px;
-  margin: 22px 0 14px;
 }
 
-.print-meta {
+.mau-header p,
+.mau-title strong,
+.mau-line,
+.notes p {
+  margin: 0;
+}
+
+.mau-header strong,
+.mau-title strong,
+.page-two h3 {
+  font-weight: 800;
+}
+
+.underline {
+  display: inline-block;
+  border-bottom: 1px solid #000;
+  font-weight: 700;
+}
+
+.mau-title {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 20px;
-  margin-bottom: 14px;
+  gap: 2px;
+  text-align: center;
+  font-size: 21px;
+  margin: 34px 0 22px;
+}
+
+.mau-meta {
+  display: grid;
+  grid-template-columns: 210px 1fr 90px 1fr;
+  gap: 12px 18px;
+  margin-bottom: 12px;
+  font-size: 17px;
+}
+
+.mau-line {
+  margin: 8px 0 4px;
+  font-size: 17px;
+}
+
+.mau-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.mau-table th,
+.mau-table td {
+  border: 1.4px solid #000;
+  padding: 3px 4px;
+  text-align: center;
+  vertical-align: middle;
+  color: #000;
+}
+
+.mau-table th {
+  background: #fff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.allowance-table {
+  border: 2px solid #000;
+  margin-left: 78px;
+  width: calc(100% - 78px);
+}
+
+.allowance-table th,
+.allowance-table td {
+  height: 24px;
+  font-size: 16px;
+}
+
+.allowance-table th:nth-child(1) {
+  width: 42px;
+}
+
+.mau-rank {
+  display: grid;
+  grid-template-columns: 90px 125px 64px 90px 112px 90px 130px 1fr;
+  gap: 8px;
+  align-items: center;
+  margin: 6px 0 4px;
+  font-size: 17px;
+}
+
+.main-report-table {
+  border: 2px solid #000;
+}
+
+.main-report-table th,
+.main-report-table td {
   font-size: 14px;
 }
 
-.print-table th,
-.print-table td {
-  border: 1px solid #9aa8a3;
-  font-size: 12px;
+.main-report-table th:nth-child(1),
+.main-report-table td:nth-child(1) {
+  width: 76px;
 }
 
-.signature-row {
-  margin-top: 28px;
-  min-height: 80px;
-  font-weight: 700;
+.main-report-table th:nth-child(2),
+.main-report-table td:nth-child(2) {
+  width: 205px;
+}
+
+.main-report-table .col-numbers th {
+  height: 22px;
+}
+
+.week-report-row td {
+  height: 70px;
+  font-size: 16px;
+}
+
+.lesson-cell {
+  text-align: center;
+}
+
+.dotted-line {
+  height: 16px;
+  border-bottom: 1px dashed #000;
+}
+
+.total-row td {
+  height: 24px;
+  font-weight: 800;
+}
+
+.mau-total {
+  display: grid;
+  grid-template-columns: 230px 90px 120px 1fr;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 18px;
+}
+
+.page-two {
+  padding-top: 92px;
+}
+
+.page-two h3 {
+  text-align: center;
+  margin: 0 0 2px;
+  font-size: 19px;
+}
+
+.schedule-table {
+  border: 2px solid #000;
+}
+
+.schedule-table th,
+.schedule-table td {
+  height: 22px;
+  font-size: 18px;
+  padding: 1px 3px;
+}
+
+.schedule-table tbody td {
+  border-bottom: 1px dashed #000;
+}
+
+.date-line {
+  margin: 4px 38px 12px 0;
+  text-align: right;
+  font-style: italic;
+  font-size: 16px;
+}
+
+.signature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  text-align: center;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 18px;
+}
+
+.signature-grid > div {
+  display: grid;
+  gap: 9px;
+  min-height: 155px;
+}
+
+.signature-name {
+  align-self: end;
+}
+
+.notes {
+  margin-top: 155px;
+  font-size: 18px;
+  line-height: 1.42;
 }
 
 @media (max-width: 980px) {
@@ -349,12 +526,20 @@ th {
   }
 
   .summary-strip,
-  .print-meta {
-    grid-template-columns: 1fr;
+  .print-page {
+    width: 100%;
+    min-height: auto;
+    padding: 34px 24px;
+    overflow: auto;
   }
 }
 
 @media print {
+  @page {
+    size: letter portrait;
+    margin: 0;
+  }
+
   body {
     background: white;
   }
@@ -376,5 +561,19 @@ th {
     border: 0;
     margin: 0;
     padding: 0;
+  }
+
+  .print-page {
+    width: 8.5in;
+    height: 11in;
+    min-height: 11in;
+    margin: 0;
+    padding: 0.56in 0.48in 0.42in;
+    page-break-after: always;
+    box-shadow: none;
+  }
+
+  .print-page:last-child {
+    page-break-after: auto;
   }
 }

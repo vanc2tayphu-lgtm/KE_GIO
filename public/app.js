@@ -78,9 +78,7 @@ const els = {
   totalActual: document.querySelector("#totalActual"),
   totalRemainingNorm: document.querySelector("#totalRemainingNorm"),
   totalResult: document.querySelector("#totalResult"),
-  printTitle: document.querySelector("#printTitle"),
-  printMeta: document.querySelector("#printMeta"),
-  previewTable: document.querySelector("#previewTable")
+  printArea: document.querySelector("#printArea")
 };
 
 let state = {
@@ -98,6 +96,11 @@ function dateOnly(value) {
 function formatDate(value) {
   const d = dateOnly(value);
   return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function formatShortDate(value) {
+  const d = dateOnly(value);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
 function monthLabel(month) {
@@ -328,52 +331,219 @@ function renderSummary() {
 function renderPreview() {
   const { rows, totals } = calculate();
   const [year, mm] = state.month.split("-");
-  els.printTitle.textContent = `BẢNG KÊ CHI TIẾT XÁC ĐỊNH SỐ GIỜ THỪA-THIẾU THÁNG ${Number(mm)} NĂM ${year}`;
-  els.printMeta.innerHTML = `
-    <div><strong>Họ tên giáo viên:</strong> ${escapeHtml(state.profile.name)}</div>
-    <div><strong>Môn:</strong> ${escapeHtml(state.profile.subject)}</div>
-    <div><strong>Phân công lớp dạy:</strong> ${escapeHtml(state.profile.assignment)}</div>
-    <div><strong>Mã ngạch:</strong> ${escapeHtml(state.profile.rankCode)} - <strong>Bậc:</strong> ${escapeHtml(state.profile.salaryLevel)} - <strong>HSL:</strong> ${escapeHtml(state.profile.salaryCoeff)}</div>
-  `;
-  els.previewTable.innerHTML = `
-    <thead>
-      <tr>
-        <th>Thời gian</th>
-        <th>Nội dung dạy</th>
-        <th>Thực dạy</th>
-        <th>Định mức</th>
-        <th>Giảm</th>
-        <th>Còn lại</th>
-        <th>Thừa/thiếu</th>
-        <th>Ghi chú</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rows
-        .map(
-          (row) => `
+  const monthNumber = Number(mm);
+  const lastDay = new Date(Number(year), monthNumber, 0);
+  const totalSurplus = rows.reduce((sum, row) => sum + Math.max(row.diff, 0), 0);
+  const totalShortage = rows.reduce((sum, row) => sum + Math.max(-row.diff, 0), 0);
+  const signedTotal = totals.diff > 0 ? `+${formatNumber(totals.diff)}` : totals.diff < 0 ? `-${formatNumber(Math.abs(totals.diff))}` : "0";
+  const signatureSurplus = totalSurplus ? `+${formatNumber(totalSurplus)}` : "0";
+  const signatureShortage = totalShortage ? `-${formatNumber(totalShortage)}` : "0";
+  const totalText = resultText(totals.diff);
+  const allowances = [...state.allowances, {}, {}, {}].slice(0, 3);
+
+  els.printArea.innerHTML = `
+    <div class="print-page page-one">
+      <div class="mau-header">
+        <div>
+          <p>UBND XÃ TÂY PHÚ</p>
+          <strong>TRƯỜNG THCS TÂY PHÚ</strong>
+        </div>
+        <div>
+          <strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong>
+          <p class="underline">Độc lập - Tự do - Hạnh phúc</p>
+        </div>
+      </div>
+
+      <div class="mau-title">
+        <strong>BẢNG KÊ CHI TIẾT</strong>
+        <strong>XÁC ĐỊNH SỐ GIỜ THỪA-THIẾU THÁNG ${String(monthNumber).padStart(2, "0")} NĂM ${year}</strong>
+      </div>
+
+      <div class="mau-meta">
+        <span>Họ tên giáo viên :</span><strong>${escapeHtml(state.profile.name)}</strong>
+        <span>Môn :</span><strong>${escapeHtml(state.profile.subject)}</strong>
+        <span>Phân công lớp dạy (cột 3) :</span><span>${escapeHtml(state.profile.assignment)}</span>
+        <span>Tổng số tiết dạy :</span><span>${formatNumber(rows[0]?.regular || 0)}</span>
+      </div>
+
+      <div class="mau-line">Kiêm nhiệm : (cột 7)</div>
+      <table class="mau-table allowance-table">
+        <thead>
           <tr>
-            <td>${row.n ? `Tuần ${row.n}<br>` : ""}${formatDate(row.start)} - ${formatDate(row.end)}</td>
-            <td>${escapeHtml(row.content || statusLabel(row.status))}</td>
-            <td>${formatNumber(row.actual)}</td>
-            <td>${formatNumber(row.norm)}</td>
-            <td>${formatNumber(row.reduction)}</td>
-            <td>${formatNumber(row.remainingNorm)}</td>
-            <td>${escapeHtml(resultText(row.diff))}</td>
-            <td>${escapeHtml(row.note || "")}</td>
-          </tr>`
-        )
-        .join("")}
-      <tr>
-        <th colspan="2">Cộng</th>
-        <th>${formatNumber(totals.actual)}</th>
-        <th>${formatNumber(totals.norm)}</th>
-        <th>${formatNumber(totals.reduction)}</th>
-        <th>${formatNumber(totals.remainingNorm)}</th>
-        <th>${escapeHtml(resultText(totals.diff))}</th>
-        <th></th>
-      </tr>
-    </tbody>
+            <th rowspan="2">TT</th>
+            <th rowspan="2">Công tác kiêm nhiệm</th>
+            <th colspan="2">Thời gian hưởng</th>
+            <th rowspan="2">Số tiết</th>
+            <th rowspan="2">Ghi chú<br>(Kèm QĐ, chứng từ...)</th>
+          </tr>
+          <tr>
+            <th>Từ...</th>
+            <th>đến....</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${allowances
+            .map(
+              (item, index) => `
+                <tr>
+                  <td>${index + 1}</td>
+                  <td>${escapeHtml(item.name || (index === 2 ? "............" : ""))}</td>
+                  <td></td>
+                  <td></td>
+                  <td>${item.periods ? formatNumber(numberValue(item.periods)) : ""}</td>
+                  <td></td>
+                </tr>`
+            )
+            .join("")}
+          <tr>
+            <td></td>
+            <td>Cộng</td>
+            <td></td>
+            <td></td>
+            <td>${totalAllowanceReduction() ? formatNumber(totalAllowanceReduction()) : ""}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="mau-rank">
+        <span>Mã ngạch :</span><span>${escapeHtml(state.profile.rankCode)}</span>
+        <span>Bậc :</span><span>${escapeHtml(state.profile.salaryLevel)}</span>
+        <span>HSL-cơ bản :</span><span>${escapeHtml(state.profile.salaryCoeff)}</span>
+        <span>Phụ cấp chức vụ :</span><span></span>
+      </div>
+      <div class="mau-line">Qui định : <strong>${formatNumber(numberValue(state.profile.weeklyNorm))}</strong>&nbsp; tiết/ tuần</div>
+
+      <table class="mau-table main-report-table">
+        <thead>
+          <tr>
+            <th rowspan="2">Thời gian</th>
+            <th rowspan="2">Dạy thường xuyên ( dạy đột xuất : dạy thay ai , lớp , tiết , ngày,ghi nơi cột đột xuất )</th>
+            <th colspan="3">Tổng số tiết thực dạy</th>
+            <th rowspan="2">Số tiết định mức</th>
+            <th rowspan="2">Số tiết được giảm định mức</th>
+            <th rowspan="2">Số tiết định mức còn lại</th>
+            <th colspan="2">Số tiết thừa , thiếu</th>
+          </tr>
+          <tr>
+            <th>Thường xuyên</th>
+            <th>Dạy đột xuất</th>
+            <th>Cộng</th>
+            <th>Thừa</th>
+            <th>Thiếu</th>
+          </tr>
+          <tr class="col-numbers">
+            <th>(1)</th><th>(2)</th><th>(3)</th><th>(4)</th><th>(5)</th><th>(6)</th><th>(7)</th><th>(8)</th><th>(9)</th><th>(10)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((row) => reportRowHtml(row)).join("")}
+          <tr class="total-row">
+            <td colspan="2">CỘNG</td>
+            <td>${formatNumber(totals.actual - rows.reduce((s, row) => s + row.extra, 0))}</td>
+            <td>${formatNumber(rows.reduce((s, row) => s + row.extra, 0))}</td>
+            <td>${formatNumber(totals.actual)}</td>
+            <td>${formatNumber(totals.norm)}</td>
+            <td>${formatNumber(totals.reduction)}</td>
+            <td>${formatNumber(totals.remainingNorm)}</td>
+            <td>${formatNumber(totalSurplus)}</td>
+            <td>${formatNumber(totalShortage)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="mau-total">
+        <strong>Tổng số tiết thừa, thiếu :</strong>
+        <span>${signedTotal}</span>
+        <strong>Bằng chữ:</strong>
+        <span>${escapeHtml(totalText)}</span>
+      </div>
+    </div>
+
+    <div class="print-page page-two">
+      <h3>Thời khóa biểu</h3>
+      ${scheduleTableHtml()}
+      <p class="date-line">Thoại Sơn, ngày ${String(lastDay.getDate()).padStart(2, "0")} tháng ${String(monthNumber).padStart(2, "0")} năm ${year}</p>
+      <div class="signature-grid">
+        <div>
+          <strong>Duyệt Ban Giám hiệu</strong>
+          <strong>PHÓ HIỆU TRƯỞNG</strong>
+          <strong class="signature-name">Lê Văn Cường</strong>
+        </div>
+        <div>
+          <strong>Xác nhận tổ trưởng</strong>
+          <span>Thừa: ${signatureSurplus}, Thiếu: ${signatureShortage}</span>
+          <strong class="signature-name">Lê Thị Mỹ Phụng</strong>
+        </div>
+        <div>
+          <strong>Người dạy</strong>
+          <strong class="signature-name">${escapeHtml(state.profile.name)}</strong>
+        </div>
+      </div>
+      <div class="notes">
+        <strong><em><u>Ghi chú :</u></em></strong>
+        <p>- GV phải kê khai đầy đủ các thông tin trong bảng kê, nếu có dạy thay ai hoặc dạy bù phải ghi bên cột đột xuất (cột 4) và ghi đầy đủ thông tin diễn giải (cột 2), Thời khóa biểu phải khoanh tròn tiết dạy thay hoặc dạy bù đó.</p>
+        <p>- Tất cả GV đều phải kê khai giờ buổi.</p>
+        <p>- Các chức danh mà giáo viên kiêm nhiệm được giảm định mức tiết dạy hoặc quy đổi thành tiết dạy được quy định tại thông tư 05/2005/TT-BGDĐT, ngày 07/03/2025, phải kèm theo minh chứng (quyết định, chứng từ... hợp pháp). Các chức danh mà giáo viên kiêm nhiệm không được quy</p>
+        <p>- BGH, Tổ trưởng có trách nhiệm kiểm tra việc kê khai của GV.</p>
+        <p>- Số tiết thừa phải ghi dấu "+" phía trước, số tiết thiếu phải ghi dấu "-" phía trước.</p>
+        <p>- Cột (5) = cột (3) + cột (4); cột (8) = cột (6) - cột (7); cột (9) = cột (5) - cột (8); cột (10) = cột (5) - cột (8).</p>
+      </div>
+    </div>
+  `;
+}
+
+function reportRowHtml(row) {
+  const content = row.status === "teaching" ? row.content : statusLabel(row.status);
+  const surplus = Math.max(row.diff, 0);
+  const shortage = Math.max(-row.diff, 0);
+  return `
+    <tr class="week-report-row">
+      <td>
+        ${row.n ? `Tuần ${row.n}<br>` : "Nghỉ<br>"}
+        Từ ${formatShortDate(row.start)}<br>
+        Đến ${formatShortDate(row.end)}
+      </td>
+      <td class="lesson-cell">
+        <div>${escapeHtml(content || "")}</div>
+        <div class="dotted-line"></div>
+        <div class="dotted-line"></div>
+        <div class="dotted-line"></div>
+      </td>
+      <td>${row.regular ? formatNumber(row.regular) : ""}</td>
+      <td>${row.extra ? formatNumber(row.extra) : ""}</td>
+      <td>${row.actual ? formatNumber(row.actual) : ""}</td>
+      <td>${row.norm ? formatNumber(row.norm) : ""}</td>
+      <td>${row.reduction ? formatNumber(row.reduction) : ""}</td>
+      <td>${row.remainingNorm ? formatNumber(row.remainingNorm) : ""}</td>
+      <td>${surplus ? formatNumber(surplus) : ""}</td>
+      <td>${shortage ? formatNumber(shortage) : ""}</td>
+    </tr>
+  `;
+}
+
+function scheduleTableHtml() {
+  const days = ["Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
+  const dayRows = days
+    .map(
+      (day) => `
+        <tr>
+          <td>${day}</td><td></td><td></td><td></td><td></td><td></td><td></td>
+          <td>${day}</td><td></td><td></td><td></td><td></td><td></td><td></td>
+        </tr>`
+    )
+    .join("");
+  return `
+    <table class="mau-table schedule-table">
+      <thead>
+        <tr><th colspan="7">Sáng</th><th colspan="7">Chiều</th></tr>
+        <tr>
+          <th>Tiết</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>Cộng</th>
+          <th>Tiết</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>Cộng</th>
+        </tr>
+      </thead>
+      <tbody>${dayRows}</tbody>
+    </table>
   `;
 }
 
@@ -397,8 +567,8 @@ function exportExcel() {
   saveCurrentRecord();
   const html = `
     <html>
-      <head><meta charset="utf-8" /></head>
-      <body>${document.querySelector("#printArea").innerHTML}</body>
+      <head><meta charset="utf-8" /><style>${exportStyles()}</style></head>
+      <body class="excel-export">${document.querySelector("#printArea").innerHTML}</body>
     </html>
   `;
   const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" });
@@ -408,6 +578,21 @@ function exportExcel() {
   a.download = `ke-gio-${state.profile.name || "giao-vien"}-${state.month}.xls`.replace(/\s+/g, "-");
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function exportStyles() {
+  return `
+    body { font-family: "Times New Roman", Times, serif; color: #000; }
+    .print-page { page-break-after: always; width: 8.5in; padding: .45in; }
+    .mau-header, .signature-grid { display: grid; grid-template-columns: repeat(2, 1fr); text-align: center; }
+    .signature-grid { grid-template-columns: repeat(3, 1fr); }
+    .mau-title { text-align: center; font-size: 20px; font-weight: bold; }
+    .mau-meta, .mau-rank, .mau-total { display: grid; gap: 8px; }
+    table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+    th, td { border: 1px solid #000; text-align: center; vertical-align: middle; padding: 3px; }
+    th { font-weight: bold; }
+    .notes { font-size: 14px; line-height: 1.35; }
+  `;
 }
 
 function escapeHtml(value) {
