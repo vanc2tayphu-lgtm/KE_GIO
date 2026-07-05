@@ -39,8 +39,10 @@ const schoolWeeks = [
 ];
 
 const defaultTeacherInfo = {
+  teacherCode: "",
   subject: "",
   assignment: "",
+  email: "",
   rankCode: "V.07.04.31",
   salaryLevel: "",
   salaryCoeff: "",
@@ -104,12 +106,13 @@ const teacherOverrides = {
   }
 };
 
-const teachers = teacherNames.map((name) => {
+let teachers = teacherNames.map((name, index) => {
   const id = slugifyVietnamese(name);
   return {
     id,
-    name,
     ...defaultTeacherInfo,
+    teacherCode: `GV${String(index + 1).padStart(4, "0")}`,
+    name,
     ...(teacherOverrides[id] || {})
   };
 });
@@ -226,7 +229,15 @@ function defaultEntries() {
 function loadCurrentRecord() {
   const saved = localStorage.getItem(storageKey());
   if (saved) {
-    state = { ...state, ...JSON.parse(saved) };
+    const savedState = JSON.parse(saved);
+    state = {
+      ...state,
+      ...savedState,
+      profile: {
+        ...state.profile,
+        ...(savedState.profile || {})
+      }
+    };
     return;
   }
   state.entries = defaultEntries();
@@ -252,8 +263,10 @@ function buildMonthlySummaryPayload() {
   return {
     action: "upsertMonthlySummary",
     teacherId: state.teacherId,
+    teacherCode: state.profile.teacherCode || state.teacherId,
     teacherName: state.profile.name,
     subject: state.profile.subject,
+    email: state.profile.email || "",
     month: state.month,
     actual: Number(totals.actual.toFixed(2)),
     surplus: Number(Math.max(totals.diff, 0).toFixed(2)),
@@ -270,20 +283,48 @@ async function syncMonthlySummaryToGoogleSheet() {
     return false;
   }
 
-  setSyncStatus("Đang gửi tổng hợp tháng lên Google Sheet...");
+  const securityCode = window.prompt("Nhập mã bảo mật 6 số của giáo viên để lưu bảng kê:");
+  if (!securityCode) {
+    setSyncStatus("Đã hủy lưu Google Sheet vì chưa nhập mã bảo mật.", "error");
+    return false;
+  }
+
+  setSyncStatus("Đang xác thực và gửi tổng hợp tháng lên Google Sheet...");
   try {
-    await fetch(url, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(buildMonthlySummaryPayload())
+    const result = await requestGoogleScript(url, {
+      ...buildMonthlySummaryPayload(),
+      securityCode
     });
-    setSyncStatus("Đã gửi tổng hợp tháng lên Google Sheet.", "success");
-    return true;
+    if (result.ok) {
+      setSyncStatus("Đã gửi tổng hợp tháng lên Google Sheet.", "success");
+      return true;
+    }
+    setSyncStatus(result.error || "Mã bảo mật không đúng.", "error");
+    return false;
   } catch (error) {
     setSyncStatus("Không gửi được Google Sheet. Kiểm tra lại Apps Script URL.", "error");
     return false;
   }
+}
+
+function requestGoogleScript(url, params) {
+  return new Promise((resolve, reject) => {
+    const callbackName = `keGioCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const script = document.createElement("script");
+    const query = new URLSearchParams({ ...params, callback: callbackName });
+    window[callbackName] = (data) => {
+      delete window[callbackName];
+      script.remove();
+      resolve(data || {});
+    };
+    script.onerror = () => {
+      delete window[callbackName];
+      script.remove();
+      reject(new Error("Google Script request failed"));
+    };
+    script.src = `${url}${url.includes("?") ? "&" : "?"}${query.toString()}`;
+    document.body.appendChild(script);
+  });
 }
 
 function syncProfileFromInputs() {
@@ -313,7 +354,7 @@ function updateCurrentTeacherMetadata() {
   const teacher = teachers.find((item) => item.id === state.teacherId);
   if (teacher) Object.assign(teacher, state.profile);
   const option = [...els.teacherSelect.options].find((item) => item.value === state.teacherId);
-  if (option) option.textContent = state.profile.name || option.textContent;
+  if (option) option.textContent = teacherOptionLabel(state.profile);
 }
 
 function refreshLiveOutputs() {
@@ -321,6 +362,74 @@ function refreshLiveOutputs() {
   updateCurrentTeacherMetadata();
   renderSummary();
   renderPreview();
+}
+
+function teacherOptionLabel(teacher) {
+  return [teacher.name, teacher.subject, teacher.teacherCode].filter(Boolean).join(" - ");
+}
+
+function populateTeacherSelect() {
+  els.teacherSelect.innerHTML = "";
+  teachers.forEach((teacher) => {
+    const option = document.createElement("option");
+    option.value = teacher.id;
+    option.textContent = teacherOptionLabel(teacher);
+    els.teacherSelect.appendChild(option);
+  });
+}
+
+async function loadTeacherDirectoryFromGoogleSheet() {
+  const url = els.googleSheetUrl.value.trim();
+  saveGoogleSheetUrl();
+  if (!url) {
+    setSyncStatus("Chưa có Apps Script URL để tải danh sách giáo viên.", "error");
+    return;
+  }
+  setSyncStatus("Đang tải danh sách giáo viên từ Google Sheet...");
+  try {
+    const result = await requestGoogleScript(url, { action: "teachers" });
+    if (!result.ok || !Array.isArray(result.teachers)) {
+      setSyncStatus(result.error || "Không tải được danh sách giáo viên.", "error");
+      return;
+    }
+    teachers = result.teachers.map((teacher) => ({
+      ...defaultTeacherInfo,
+      id: teacher.id || slugifyVietnamese(`${teacher.teacherCode || ""}-${teacher.name || ""}`),
+      teacherCode: teacher.teacherCode || "",
+      name: teacher.name || "",
+      subject: teacher.subject || "",
+      email: teacher.email || ""
+    }));
+    populateTeacherSelect();
+    state.teacherId = teachers[0]?.id || state.teacherId;
+    els.teacherSelect.value = state.teacherId;
+    resetForSelection();
+    setSyncStatus(`Đã tải ${teachers.length} giáo viên từ Google Sheet.`, "success");
+  } catch (error) {
+    setSyncStatus("Không tải được danh sách giáo viên. Kiểm tra lại Apps Script URL.", "error");
+  }
+}
+
+async function requestNewSecurityCode() {
+  const url = els.googleSheetUrl.value.trim();
+  saveGoogleSheetUrl();
+  if (!url) {
+    setSyncStatus("Chưa có Apps Script URL để gửi lại mã.", "error");
+    return;
+  }
+  const email = window.prompt("Nhập email đã đăng ký trong danh sách giáo viên:");
+  if (!email) return;
+  setSyncStatus("Đang gửi mã mới qua email...");
+  try {
+    const result = await requestGoogleScript(url, { action: "resetCode", email });
+    if (result.ok) {
+      setSyncStatus("Đã gửi mã mới vào email đã đăng ký.", "success");
+    } else {
+      setSyncStatus(result.error || "Không gửi được mã mới.", "error");
+    }
+  } catch (error) {
+    setSyncStatus("Không gửi được mã mới. Kiểm tra lại Apps Script URL.", "error");
+  }
 }
 
 function numberValue(value) {
@@ -1383,12 +1492,7 @@ function init() {
     option.textContent = monthLabel(month);
     els.monthSelect.appendChild(option);
   });
-  teachers.forEach((teacher) => {
-    const option = document.createElement("option");
-    option.value = teacher.id;
-    option.textContent = teacher.name;
-    els.teacherSelect.appendChild(option);
-  });
+  populateTeacherSelect();
   els.monthSelect.value = state.month;
   els.teacherSelect.value = state.teacherId;
   els.googleSheetUrl.value = localStorage.getItem(googleSheetUrlKey()) || "";
@@ -1438,6 +1542,8 @@ function init() {
   document.querySelector("#exportBtn").addEventListener("click", exportExcel);
   document.querySelector("#teacherSummaryBtn").addEventListener("click", exportTeacherSummary);
   document.querySelector("#leaderSummaryBtn").addEventListener("click", exportLeaderSummary);
+  document.querySelector("#loadTeachersBtn").addEventListener("click", loadTeacherDirectoryFromGoogleSheet);
+  document.querySelector("#forgotCodeBtn").addEventListener("click", requestNewSecurityCode);
 }
 
 window.__keGio = {
