@@ -719,9 +719,11 @@ function worksheetXml() {
   setN("M40", totalSurplus, 16);
   setN("N40", totalShortage, 16);
   set("A41", " Tổng số tiết thừa, thiếu :  ", 17);
-  set("E41", signedTotal, 17);
+  set("D41", signedTotal, 5);
   set("G41", "Bằng chữ:", 18);
-  set("I41", resultText(totals.diff), 17);
+  set("I41", resultText(totals.diff), 5);
+  setStyle("A41", 5);
+  setStyle("L41", 5);
 
   set("A45", "Thời khóa biểu", 2);
   set("A46", "Sáng", 19);
@@ -791,7 +793,7 @@ function worksheetXml() {
   <dimension ref="A1:N79"/>
   <sheetViews><sheetView workbookViewId="0"/></sheetViews>
   <sheetFormatPr defaultRowHeight="15"/>
-  <cols>${[8.7265625,4.7265625,13,5.26953125,4.81640625,6.1796875,7,7.78,5.7265625,7.89,8.11,10.5,6.89,9.5]
+  <cols>${[8.7265625,4.7265625,13,5.26953125,4.81640625,6.1796875,7,7.9,5.7265625,7.89,8.11,8.11,6.89,9.5]
     .map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>
   <sheetData>${sheetData}</sheetData>
   <mergeCells count="${xlsxMerges().length}">${xlsxMerges().map((ref) => `<mergeCell ref="${ref}"/>`).join("")}</mergeCells>
@@ -812,7 +814,7 @@ function xlsxMerges() {
     "A28:A31", "B28:F28", "B29:F29", "B30:F30", "B31:F31", "G28:G31", "H28:H31", "I28:I31", "J28:J31", "K28:K31", "L28:L31", "M28:M31", "N28:N31",
     "A32:A35", "B32:F32", "B33:F33", "B34:F34", "B35:F35", "G32:G35", "H32:H35", "I32:I35", "J32:J35", "K32:K35", "L32:L35", "M32:M35", "N32:N35",
     "A36:A39", "B36:F36", "B37:F37", "B38:F38", "B39:F39", "G36:G39", "H36:H39", "I36:I39", "J36:J39", "K36:K39", "L36:L39", "M36:M39", "N36:N39",
-    "A40:F40", "G41:H41", "I41:N41", "A44:N44", "A45:N45", "A46:G46", "H46:N46", "J54:N54", "A55:E55", "F55:I55", "J55:N55", "A56:E56", "F56:G56", "J56:N56", "A61:E61", "F61:I61", "J61:N61",
+    "A40:F40", "D41:E41", "G41:H41", "I41:N41", "A44:N44", "A45:N45", "A46:G46", "H46:N46", "J54:N54", "A55:E55", "F55:I55", "J55:N55", "A56:E56", "F56:G56", "J56:N56", "A61:E61", "F61:I61", "J61:N61",
     "A73:N73", "A74:N74", "A75:N75", "A76:N76", "A77:N77", "A78:N78", "A79:N79"
   ];
 }
@@ -1085,7 +1087,15 @@ function init() {
   });
   document.querySelector("#printBtn").addEventListener("click", () => {
     saveCurrentRecord();
+    const originalTitle = document.title;
+    const restoreTitle = () => {
+      document.title = originalTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    document.title = " ";
+    window.addEventListener("afterprint", restoreTitle);
     window.print();
+    window.setTimeout(restoreTitle, 1000);
   });
   document.querySelector("#exportBtn").addEventListener("click", exportExcel);
 }
