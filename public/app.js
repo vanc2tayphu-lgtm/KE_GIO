@@ -615,7 +615,7 @@ function renderAllowances() {
     const row = document.createElement("div");
     row.className = "allowance-row";
     row.innerHTML = `
-      <input aria-label="Công tác kiêm nhiệm" value="${escapeAttr(item.name || "")}" placeholder="Chủ nhiệm, tổ trưởng..." />
+      <input class="allowance-duty-input" list="allowanceDutyOptions" aria-label="Công tác kiêm nhiệm" value="${escapeAttr(item.name || "")}" placeholder="Chọn hoặc nhập: Chủ nhiệm, tổ trưởng..." />
       <input aria-label="Từ ngày hưởng kiêm nhiệm" value="${escapeAttr(item.from || "")}" placeholder="Từ..." />
       <input aria-label="Đến ngày hưởng kiêm nhiệm" value="${escapeAttr(item.to || "")}" placeholder="Đến..." />
       <input aria-label="Số tiết giảm" type="number" min="0" step="0.5" value="${escapeAttr(item.periods ?? "")}" />

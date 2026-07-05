@@ -301,9 +301,13 @@ th {
 
 .allowance-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 76px 76px 82px 34px;
+  grid-template-columns: 1fr 1fr 82px 34px;
   gap: 8px;
   margin-bottom: 8px;
+}
+
+.allowance-duty-input {
+  grid-column: 1 / -1;
 }
 
 .allowance-row button {
@@ -583,7 +587,7 @@ th {
     grid-template-columns: 1fr 1fr;
   }
 
-  .allowance-row input:first-child {
+  .allowance-duty-input {
     grid-column: 1 / -1;
   }
 
