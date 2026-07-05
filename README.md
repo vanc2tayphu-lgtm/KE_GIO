@@ -22,6 +22,8 @@ Thiết lập Vercel:
 - Build Command: `npm run build`
 - Output Directory: `dist`
 
+Production deploy should be rebuilt after changing Vercel project settings so the latest Framework Preset is applied.
+
 ## Ghi chú an toàn dữ liệu
 
 File Excel mẫu ban đầu không được commit vào repo vì có sheet ẩn legacy đáng ngờ. App sử dụng dữ liệu khung tuần đã trích sạch trong `app.js`.
