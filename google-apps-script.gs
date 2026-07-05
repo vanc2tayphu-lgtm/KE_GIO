@@ -224,14 +224,31 @@ function teachersResponse_() {
 }
 
 function validateTeacher_(payload) {
-  const teacherCode = String(payload.teacherCode || payload.teacherId || "").trim();
+  const teacherCode = normalizeKey_(payload.teacherCode || payload.teacherId || "");
   const securityCode = String(payload.securityCode || "").trim();
   if (!teacherCode) throw new Error("Thiếu mã giáo viên.");
   if (!/^\d{6}$/.test(securityCode)) throw new Error("Mã bảo mật phải gồm 6 chữ số.");
-  const teacher = teacherRecords_().find((item) => item.teacherCode === teacherCode);
+  const teacher = findTeacherForPayload_(payload, teacherCode);
   if (!teacher) throw new Error("Không tìm thấy mã giáo viên trong danh sách.");
   if (String(teacher.securityCode) !== securityCode) throw new Error("Mã bảo mật không đúng.");
   return teacher;
+}
+
+function findTeacherForPayload_(payload, teacherCode) {
+  const teachers = teacherRecords_();
+  const normalizedCode = normalizeKey_(teacherCode);
+  const normalizedName = normalizeName_(payload.teacherName || "");
+  const normalizedEmail = String(payload.email || "").trim().toLowerCase();
+  const normalizedSubject = normalizeName_(payload.subject || "");
+
+  return teachers.find((item) => normalizeKey_(item.teacherCode) === normalizedCode) ||
+    teachers.find((item) => normalizedEmail && item.email.toLowerCase() === normalizedEmail) ||
+    teachers.find((item) =>
+      normalizedName &&
+      normalizeName_(item.name) === normalizedName &&
+      (!normalizedSubject || !item.subject || normalizeName_(item.subject) === normalizedSubject)
+    ) ||
+    null;
 }
 
 function resetSecurityCode_(email) {
@@ -417,6 +434,21 @@ function slugify_(value) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function normalizeKey_(value) {
+  return String(value || "").trim().replace(/\.0$/, "");
+}
+
+function normalizeName_(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function maskEmail_(email) {

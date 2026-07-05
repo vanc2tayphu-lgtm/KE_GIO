@@ -218,6 +218,10 @@ function googleSheetUrlKey() {
   return "ke-gio:google-sheet-url";
 }
 
+function securityCodeKey(teacherCode) {
+  return `ke-gio:security-code:${teacherCode || state.teacherId}`;
+}
+
 function monthsFromWeeks() {
   const months = new Set();
   schoolWeeks.forEach((week) => {
@@ -323,7 +327,11 @@ async function syncMonthlySummaryToGoogleSheet() {
     return false;
   }
 
-  const securityCode = window.prompt("Nhập mã bảo mật 6 số của giáo viên để lưu bảng kê:");
+  const teacherCode = state.profile.teacherCode || state.teacherId;
+  let securityCode = localStorage.getItem(securityCodeKey(teacherCode)) || "";
+  if (!securityCode) {
+    securityCode = window.prompt("Nhập mã bảo mật 6 số của giáo viên để lưu bảng kê:");
+  }
   if (!securityCode) {
     setSyncStatus("Đã hủy lưu Google Sheet vì chưa nhập mã bảo mật.", "error");
     return false;
@@ -336,8 +344,12 @@ async function syncMonthlySummaryToGoogleSheet() {
       securityCode
     });
     if (result.ok) {
+      localStorage.setItem(securityCodeKey(teacherCode), securityCode);
       setSyncStatus("Đã gửi tổng hợp tháng lên Google Sheet.", "success");
       return true;
+    }
+    if (String(result.error || "").includes("Mã bảo mật")) {
+      localStorage.removeItem(securityCodeKey(teacherCode));
     }
     setSyncStatus(friendlyGoogleError(result.error) || "Mã bảo mật không đúng.", "error");
     return false;
