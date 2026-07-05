@@ -304,7 +304,7 @@ th {
   width: 816px;
   min-height: 1056px;
   margin: 0 auto 18px;
-  padding: 70px 58px 54px;
+  padding: 70px 40px 54px;
   background: white;
   color: #000;
   font-family: "Times New Roman", Times, serif;
@@ -589,7 +589,7 @@ th {
     height: 11in;
     min-height: 11in;
     margin: 0;
-    padding: 0.56in 0.48in 0.42in;
+    padding: 0.54in 0.26in 0.4in;
     page-break-after: always;
     box-shadow: none;
   }

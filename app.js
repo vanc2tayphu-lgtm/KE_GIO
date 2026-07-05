@@ -790,7 +790,7 @@ function worksheetXml() {
   <dimension ref="A1:N79"/>
   <sheetViews><sheetView workbookViewId="0"/></sheetViews>
   <sheetFormatPr defaultRowHeight="15"/>
-  <cols>${[9.7265625,4.81640625,5,4.7265625,5.1796875,2.54296875,6.26953125,7.1796875,5.90625,6.7265625,6.7265625,6.7265625,5.81640625,5.6328125]
+  <cols>${[8.7265625,4.7265625,13,5.26953125,4.81640625,6.1796875,7,7.453125,5.7265625,9.5,9.5,7.453125,6.7265625,9.5]
     .map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>
   <sheetData>${sheetData}</sheetData>
   <mergeCells count="${xlsxMerges().length}">${xlsxMerges().map((ref) => `<mergeCell ref="${ref}"/>`).join("")}</mergeCells>
@@ -877,7 +877,7 @@ function stylesXml() {
     xf(0, 1, center),
     xf(5, 1, centerWrap),
     xf(5, 1, center),
-    xf(3, 6, centerWrap),
+    xf(6, 6, centerWrap),
     xf(6, 3, centerWrap),
     xf(6, 4, centerWrap),
     xf(6, 5, centerWrap),
