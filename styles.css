@@ -226,18 +226,8 @@ label {
   padding: 9px 10px;
 }
 
-.sheet-config {
-  margin-top: 10px;
-}
-
-.sheet-config.hidden {
+.admin-config-panel.hidden {
   display: none;
-}
-
-.sheet-config summary {
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 12px;
 }
 
 .sync-status {

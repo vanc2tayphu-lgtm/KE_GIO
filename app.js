@@ -161,7 +161,7 @@ const els = {
   salaryCoeff: document.querySelector("#salaryCoeff"),
   weeklyNorm: document.querySelector("#weeklyNorm"),
   googleSheetUrl: document.querySelector("#googleSheetUrl"),
-  sheetConfig: document.querySelector("#sheetConfig"),
+  adminConfigPanel: document.querySelector("#adminConfigPanel"),
   loginEmail: document.querySelector("#loginEmail"),
   loginCode: document.querySelector("#loginCode"),
   syncStatus: document.querySelector("#syncStatus"),
@@ -308,10 +308,8 @@ function isAdminEmail(email) {
   return String(email || "").trim().toLowerCase() === ADMIN_EMAIL;
 }
 
-function updateSheetConfigVisibility() {
-  const isAdmin = isAdminEmail(els.loginEmail.value);
-  els.sheetConfig.classList.toggle("hidden", !isAdmin);
-  if (isAdmin) els.sheetConfig.open = true;
+function updateAdminConfigVisibility(isAdmin = false) {
+  els.adminConfigPanel.classList.toggle("hidden", !isAdmin);
 }
 
 function setLoginOverlayVisible(visible) {
@@ -323,7 +321,7 @@ function logoutTeacher() {
   localStorage.removeItem(loginSessionKey());
   els.loginCode.value = "";
   showLoggedOutTeacherSelect();
-  updateSheetConfigVisibility();
+  updateAdminConfigVisibility(false);
   setLoginOverlayVisible(true);
   setSyncStatus("Đã đăng xuất. Vui lòng đăng nhập để tiếp tục.", "success");
   renderAll();
@@ -581,9 +579,11 @@ function applyLoggedInTeacher(teacher, securityCode = "") {
       teacherCode: loggedTeacher.teacherCode,
       email: loggedTeacher.email,
       securityCode,
-      teacher: loggedTeacher
+      teacher: loggedTeacher,
+      isAdmin: isAdminEmail(loggedTeacher.email)
     });
   }
+  updateAdminConfigVisibility(isAdminEmail(loggedTeacher.email));
   resetForSelection();
 }
 
@@ -1728,13 +1728,12 @@ function init() {
   if (session?.teacher && session?.securityCode) {
     els.loginEmail.value = session.email || session.teacher.email || "";
     els.loginCode.value = session.securityCode || "";
-    updateSheetConfigVisibility();
     applyLoggedInTeacher(session.teacher, session.securityCode);
     setLoginOverlayVisible(false);
     setSyncStatus(`Đã đăng nhập: ${session.teacher.name}.`, "success");
   } else {
     showLoggedOutTeacherSelect();
-    updateSheetConfigVisibility();
+    updateAdminConfigVisibility(false);
     setLoginOverlayVisible(true);
     setSyncStatus(els.googleSheetUrl.value ? "Vui lòng đăng nhập bằng email và mật khẩu." : "Chưa cấu hình đồng bộ.");
     renderAll();
@@ -1764,7 +1763,6 @@ function init() {
     saveGoogleSheetUrl();
     setSyncStatus(els.googleSheetUrl.value.trim() ? "Đã cấu hình Google Sheet." : "Chưa cấu hình đồng bộ.");
   });
-  els.loginEmail.addEventListener("input", updateSheetConfigVisibility);
   document.querySelector("#saveBtn").addEventListener("click", async () => {
     saveCurrentRecord();
     const synced = await syncMonthlySummaryToGoogleSheet();
