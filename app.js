@@ -259,13 +259,16 @@ function loadCurrentRecord() {
   const saved = localStorage.getItem(storageKey());
   if (saved) {
     const savedState = JSON.parse(saved);
-    state = {
-      ...state,
-      ...savedState,
-      profile: {
-        ...state.profile,
-        ...(savedState.profile || {})
-      }
+    const savedProfile = savedState.profile || {};
+    state.entries = savedState.entries || defaultEntries();
+    state.allowances = savedState.allowances || [];
+    state.profile = {
+      ...state.profile,
+      rankCode: savedProfile.rankCode || state.profile.rankCode,
+      salaryLevel: savedProfile.salaryLevel || state.profile.salaryLevel,
+      salaryCoeff: savedProfile.salaryCoeff || state.profile.salaryCoeff,
+      weeklyNorm: savedProfile.weeklyNorm ?? state.profile.weeklyNorm,
+      assignment: savedProfile.assignment || state.profile.assignment
     };
     return;
   }
@@ -388,8 +391,6 @@ function setProfileInputs() {
 }
 
 function updateCurrentTeacherMetadata() {
-  const teacher = teachers.find((item) => item.id === state.teacherId);
-  if (teacher) Object.assign(teacher, state.profile);
   const option = [...els.teacherSelect.options].find((item) => item.value === state.teacherId);
   if (option) option.textContent = teacherOptionLabel(state.profile);
 }
@@ -424,6 +425,8 @@ async function loadTeacherDirectoryFromGoogleSheet() {
   }
   setSyncStatus("Đang tải danh sách giáo viên từ Google Sheet...");
   try {
+    const currentCode = state.profile.teacherCode;
+    const currentName = state.profile.name;
     const result = await requestGoogleScript(url, { action: "teachers" });
     if (!result.ok || !Array.isArray(result.teachers)) {
       setSyncStatus(friendlyGoogleError(result.error) || "Không tải được danh sách giáo viên.", "error");
@@ -438,7 +441,11 @@ async function loadTeacherDirectoryFromGoogleSheet() {
       email: teacher.email || ""
     }));
     populateTeacherSelect();
-    state.teacherId = teachers[0]?.id || state.teacherId;
+    const selectedTeacher =
+      teachers.find((teacher) => teacher.teacherCode && teacher.teacherCode === currentCode) ||
+      teachers.find((teacher) => teacher.name && teacher.name === currentName) ||
+      teachers[0];
+    state.teacherId = selectedTeacher?.id || state.teacherId;
     els.teacherSelect.value = state.teacherId;
     resetForSelection();
     setSyncStatus(`Đã tải ${teachers.length} giáo viên từ Google Sheet.`, "success");
