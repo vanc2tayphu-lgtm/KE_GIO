@@ -14,7 +14,13 @@ Web app tĩnh để lập bảng kê giờ theo tháng cho giáo viên Trường
 
 ## Deploy Vercel
 
-Đây là static app, Vercel có thể deploy trực tiếp từ GitHub repo. Không cần biến môi trường.
+Đây là static app. Vercel deploy trực tiếp từ thư mục `public/`, không cần biến môi trường.
+
+Thiết lập Vercel:
+
+- Framework Preset: `Other`
+- Build Command: `npm run build`
+- Output Directory: `public`
 
 ## Ghi chú an toàn dữ liệu
 

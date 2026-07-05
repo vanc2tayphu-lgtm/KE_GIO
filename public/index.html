@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kê giờ giáo viên THCS Tây Phú</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <aside class="sidebar" aria-label="Thiết lập bảng kê">
+          <div class="brand">
+            <div class="brand-mark">KG</div>
+            <div>
+              <h1>Kê giờ</h1>
+              <p>THCS Tây Phú</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Tháng kê giờ</h2>
+            <label>
+              Chọn tháng
+              <select id="monthSelect"></select>
+            </label>
+            <label>
+              Giáo viên
+              <select id="teacherSelect"></select>
+            </label>
+          </div>
+
+          <div class="panel">
+            <h2>Thông tin giáo viên</h2>
+            <label>Họ tên <input id="teacherName" /></label>
+            <label>Môn/phân môn <input id="subject" /></label>
+            <label>Phân công lớp dạy <textarea id="assignment" rows="3"></textarea></label>
+            <div class="two-cols">
+              <label>Mã ngạch <input id="rankCode" /></label>
+              <label>Bậc <input id="salaryLevel" /></label>
+            </div>
+            <div class="two-cols">
+              <label>Hệ số <input id="salaryCoeff" /></label>
+              <label>Định mức/tuần <input id="weeklyNorm" type="number" min="0" step="0.5" /></label>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Giảm định mức</h2>
+            <div id="allowanceList"></div>
+            <button id="addAllowance" class="secondary" type="button">+ Thêm kiêm nhiệm</button>
+          </div>
+
+          <div class="actions">
+            <button id="saveBtn" type="button">Lưu bảng kê</button>
+            <button id="printBtn" class="secondary" type="button">In / PDF</button>
+            <button id="exportBtn" class="secondary" type="button">Xuất Excel</button>
+          </div>
+        </aside>
+
+        <section class="content">
+          <div class="summary-strip">
+            <div>
+              <span>Tổng thực dạy</span>
+              <strong id="totalActual">0</strong>
+            </div>
+            <div>
+              <span>Định mức còn lại</span>
+              <strong id="totalRemainingNorm">0</strong>
+            </div>
+            <div>
+              <span>Kết quả</span>
+              <strong id="totalResult">Không thừa, thiếu</strong>
+            </div>
+          </div>
+
+          <section class="card">
+            <div class="section-heading">
+              <div>
+                <h2>Nhập tiết theo tuần</h2>
+                <p id="weekHint">Chọn tháng để app tự lấy tuần từ khung 35 tuần.</p>
+              </div>
+              <span id="weekCountBadge" class="badge">0 tuần</span>
+            </div>
+            <div class="table-wrap">
+              <table class="entry-table">
+                <thead>
+                  <tr>
+                    <th>Tuần</th>
+                    <th>Thời gian</th>
+                    <th>Trạng thái</th>
+                    <th>Nội dung/lớp dạy</th>
+                    <th>TX</th>
+                    <th>Đột xuất</th>
+                    <th>Giảm</th>
+                    <th>Thừa/thiếu</th>
+                    <th>Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody id="weekRows"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="card print-card" id="printArea">
+            <div class="print-header">
+              <div>
+                <p id="unitName">UBND XÃ TÂY PHÚ</p>
+                <strong>TRƯỜNG THCS TÂY PHÚ</strong>
+              </div>
+              <div>
+                <strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong>
+                <p>Độc lập - Tự do - Hạnh phúc</p>
+              </div>
+            </div>
+            <h2 id="printTitle">BẢNG KÊ CHI TIẾT XÁC ĐỊNH SỐ GIỜ THỪA-THIẾU</h2>
+            <div class="print-meta" id="printMeta"></div>
+            <table class="print-table" id="previewTable"></table>
+            <div class="signature-row">
+              <div>Người lập bảng</div>
+              <div>Hiệu trưởng</div>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
