@@ -616,15 +616,27 @@ function renderAllowances() {
     row.className = "allowance-row";
     row.innerHTML = `
       <input aria-label="Công tác kiêm nhiệm" value="${escapeAttr(item.name || "")}" placeholder="Chủ nhiệm, tổ trưởng..." />
+      <input aria-label="Từ ngày hưởng kiêm nhiệm" value="${escapeAttr(item.from || "")}" placeholder="Từ..." />
+      <input aria-label="Đến ngày hưởng kiêm nhiệm" value="${escapeAttr(item.to || "")}" placeholder="Đến..." />
       <input aria-label="Số tiết giảm" type="number" min="0" step="0.5" value="${escapeAttr(item.periods ?? "")}" />
       <button type="button" class="secondary" aria-label="Xóa">×</button>
     `;
-    const [nameInput, periodInput, removeBtn] = row.children;
+    const [nameInput, fromInput, toInput, periodInput, removeBtn] = row.children;
     nameInput.addEventListener("input", () => {
       state.allowances[index].name = nameInput.value;
       refreshLiveOutputs();
     });
     nameInput.addEventListener("change", renderAll);
+    fromInput.addEventListener("input", () => {
+      state.allowances[index].from = fromInput.value;
+      refreshLiveOutputs();
+    });
+    fromInput.addEventListener("change", renderAll);
+    toInput.addEventListener("input", () => {
+      state.allowances[index].to = toInput.value;
+      refreshLiveOutputs();
+    });
+    toInput.addEventListener("change", renderAll);
     periodInput.addEventListener("input", () => {
       state.allowances[index].periods = periodInput.value;
       refreshLiveOutputs();
@@ -769,8 +781,8 @@ function renderPreview() {
                 <tr>
                   <td>${index + 1}</td>
                   <td>${escapeHtml(item.name || (index === 2 ? "............" : ""))}</td>
-                  <td></td>
-                  <td></td>
+                  <td>${escapeHtml(item.from || "")}</td>
+                  <td>${escapeHtml(item.to || "")}</td>
                   <td>${item.periods ? formatNumber(numberValue(item.periods)) : ""}</td>
                   <td></td>
                 </tr>`
@@ -1160,6 +1172,8 @@ function worksheetXml() {
     const r = 11 + i;
     setN(`B${r}`, i + 1, 8);
     set(`C${r}`, item.name || (i === 2 ? "............" : ""), 8);
+    set(`J${r}`, item.from || "", 8);
+    set(`K${r}`, item.to || "", 8);
     set(`L${r}`, item.periods ? numberValue(item.periods) : "", 8);
   });
   set("C14", "Cộng", 8);
@@ -1580,7 +1594,7 @@ function init() {
     els[key].addEventListener("change", renderAll);
   });
   document.querySelector("#addAllowance").addEventListener("click", () => {
-    state.allowances.push({ name: "", periods: 0 });
+    state.allowances.push({ name: "", from: "", to: "", periods: 0 });
     renderAll();
   });
   els.googleSheetUrl.addEventListener("input", () => {

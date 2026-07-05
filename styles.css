@@ -301,7 +301,7 @@ th {
 
 .allowance-row {
   display: grid;
-  grid-template-columns: 1fr 82px 34px;
+  grid-template-columns: minmax(0, 1fr) 76px 76px 82px 34px;
   gap: 8px;
   margin-bottom: 8px;
 }
@@ -577,6 +577,14 @@ th {
 @media (max-width: 980px) {
   .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .allowance-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .allowance-row input:first-child {
+    grid-column: 1 / -1;
   }
 
   .sidebar {
