@@ -349,6 +349,9 @@ function setSyncStatus(message, type = "") {
 
 function friendlyGoogleError(message) {
   const text = String(message || "");
+  if (text.includes("Unsupported action")) {
+    return "Apps Script đang là bản cũ, chưa hỗ trợ đăng nhập. Admin cần copy lại file google-apps-script.gs lên Apps Script rồi Deploy lại Web App.";
+  }
   if (text.includes("MailApp.sendEmail") || text.includes("script.send_mail")) {
     return "Apps Script chưa được cấp quyền gửi mail. Vào Apps Script, chọn hàm setupAuthorization, bấm Run và cấp quyền, sau đó Deploy lại Web App.";
   }
