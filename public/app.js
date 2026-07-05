@@ -872,8 +872,6 @@ function renderPreview() {
   const totalSurplus = rows.reduce((sum, row) => sum + Math.max(row.diff, 0), 0);
   const totalShortage = rows.reduce((sum, row) => sum + Math.max(-row.diff, 0), 0);
   const signedTotal = totals.diff > 0 ? `+${formatNumber(totals.diff)}` : totals.diff < 0 ? `-${formatNumber(Math.abs(totals.diff))}` : "0";
-  const signatureSurplus = totalSurplus ? `+${formatNumber(totalSurplus)}` : "0";
-  const signatureShortage = totalShortage ? `-${formatNumber(totalShortage)}` : "0";
   const totalText = resultText(totals.diff);
   const allowances = [...state.allowances, {}, {}, {}].slice(0, 3);
 
@@ -1016,7 +1014,7 @@ function renderPreview() {
         </div>
         <div>
           <strong>Xác nhận tổ trưởng</strong>
-          <span>Thừa: ${signatureSurplus}, Thiếu: ${signatureShortage}</span>
+          <span>${escapeHtml(totalText)}</span>
           <strong class="signature-name">Lê Thị Mỹ Phụng</strong>
         </div>
         <div>
@@ -1271,8 +1269,7 @@ function worksheetXml() {
   const totalSurplus = rows.reduce((sum, row) => sum + Math.max(row.diff, 0), 0);
   const totalShortage = rows.reduce((sum, row) => sum + Math.max(-row.diff, 0), 0);
   const signedTotal = totals.diff > 0 ? `+${formatNumber(totals.diff)}` : totals.diff < 0 ? `-${formatNumber(Math.abs(totals.diff))}` : "0";
-  const signatureSurplus = totalSurplus ? `+${formatNumber(totalSurplus)}` : "0";
-  const signatureShortage = totalShortage ? `-${formatNumber(totalShortage)}` : "0";
+  const totalText = resultText(totals.diff);
   const activeRows = rows.slice(0, 5);
   const weekStarts = [20, 24, 28, 32, 36];
   const cells = new Map();
@@ -1406,9 +1403,7 @@ function worksheetXml() {
   set("F55", "Xác nhận tổ trưởng", 2);
   set("J55", "Người dạy", 2);
   set("A56", "PHÓ HIỆU TRƯỞNG", 2);
-  set("F56", `Thừa: ${signatureSurplus}`, 5);
-  set("H56", ",Thiếu:", 5);
-  set("I56", signatureShortage, 5);
+  set("F56", totalText, 5);
   set("A61", "Lê Văn Cường", 2);
   set("F61", "Lê Thị Mỹ Phụng", 2);
   set("J61", state.profile.name, 2);
@@ -1481,7 +1476,7 @@ function xlsxMerges() {
     "A28:A31", "B28:F28", "B29:F29", "B30:F30", "B31:F31", "G28:G31", "H28:H31", "I28:I31", "J28:J31", "K28:K31", "L28:L31", "M28:M31", "N28:N31",
     "A32:A35", "B32:F32", "B33:F33", "B34:F34", "B35:F35", "G32:G35", "H32:H35", "I32:I35", "J32:J35", "K32:K35", "L32:L35", "M32:M35", "N32:N35",
     "A36:A39", "B36:F36", "B37:F37", "B38:F38", "B39:F39", "G36:G39", "H36:H39", "I36:I39", "J36:J39", "K36:K39", "L36:L39", "M36:M39", "N36:N39",
-    "A40:F40", "D41:E41", "G41:H41", "I41:N41", "A44:N44", "A45:N45", "A46:G46", "H46:N46", "J54:N54", "A55:E55", "F55:I55", "J55:N55", "A56:E56", "F56:G56", "J56:N56", "A61:E61", "F61:I61", "J61:N61",
+    "A40:F40", "D41:E41", "G41:H41", "I41:N41", "A44:N44", "A45:N45", "A46:G46", "H46:N46", "J54:N54", "A55:E55", "F55:I55", "J55:N55", "A56:E56", "F56:I56", "J56:N56", "A61:E61", "F61:I61", "J61:N61",
     "A73:N73", "A74:N74", "A75:N75", "A76:N76", "A77:N77", "A78:N78", "A79:N79"
   ];
 }
