@@ -765,6 +765,7 @@ function worksheetXml() {
   styleRange("A40:N40", 16);
   styleRange("A46:N47", 19);
   styleRange("A48:N53", 20);
+  styleRange("A53:N53", 24);
 
   const rowHeights = {
     1: 16.8, 2: 17.25, 3: 12.75, 4: 18.75, 5: 23.25, 6: 24.75, 7: 20.55, 8: 22.95, 9: 15.75, 10: 29.25,
@@ -863,7 +864,8 @@ function stylesXml() {
     borderXml("medium", "medium", "dashed", "dashed"),
     borderXml("medium", "medium", "dashed", "medium"),
     borderXml("thin", "thin", "medium", "medium"),
-    borderXml("thin", "thin", "dashed", "dashed")
+    borderXml("thin", "thin", "dashed", "dashed"),
+    borderXml("thin", "thin", "dashed", "medium")
   ];
   const xf = (fontId, borderId = 0, align = "") => `<xf numFmtId="0" fontId="${fontId}" fillId="0" borderId="${borderId}" xfId="0" applyFont="1" applyBorder="${borderId ? 1 : 0}" applyAlignment="${align ? 1 : 0}">${align}</xf>`;
   const center = `<alignment horizontal="center" vertical="center"/>`;
@@ -894,7 +896,8 @@ function stylesXml() {
     xf(3, 11, left),
     xf(3, 0, `<alignment horizontal="center"/><protection/>`),
     xf(4, 0, left),
-    xf(3, 0, justifyWrap)
+    xf(3, 0, justifyWrap),
+    xf(3, 12, left)
   ];
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
