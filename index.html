@@ -8,6 +8,24 @@
   </head>
   <body>
     <main class="app-shell">
+      <div id="loginOverlay" class="login-overlay">
+        <div class="login-panel">
+          <div class="login-heading">
+            <h2>Đăng nhập</h2>
+            <p>Vui lòng sử dụng tài khoản được cấp.</p>
+          </div>
+          <label>Email đăng nhập <input id="loginEmail" type="email" autocomplete="username" placeholder="email trong Google Sheet" /></label>
+          <label>Mật khẩu <input id="loginCode" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="6 chữ số" /></label>
+          <button id="loginBtn" class="login-button" type="button">Đăng nhập</button>
+          <button id="forgotLoginCodeBtn" class="link-button" type="button">Quên mật khẩu?</button>
+          <details id="sheetConfig" class="sheet-config hidden">
+            <summary>Cấu hình Google Sheet</summary>
+            <label class="sheet-url-field">Apps Script Web App URL <input id="googleSheetUrl" placeholder="https://script.google.com/macros/s/..." /></label>
+          </details>
+          <p id="syncStatus" class="sync-status">Chưa cấu hình đồng bộ.</p>
+        </div>
+      </div>
+
       <section class="workspace">
         <aside class="sidebar" aria-label="Thiết lập bảng kê">
           <div class="brand">
@@ -55,22 +73,6 @@
               <option value="Kiêm nhiệm khác"></option>
             </datalist>
             <button id="addAllowance" class="secondary" type="button">+ Thêm kiêm nhiệm</button>
-          </div>
-
-          <div class="panel login-panel">
-            <div class="login-heading">
-              <h2>Đăng nhập</h2>
-              <p>Vui lòng sử dụng tài khoản được cấp.</p>
-            </div>
-            <label>Email đăng nhập <input id="loginEmail" type="email" autocomplete="username" placeholder="email trong Google Sheet" /></label>
-            <label>Mật khẩu <input id="loginCode" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="6 chữ số" /></label>
-            <button id="loginBtn" class="login-button" type="button">Đăng nhập</button>
-            <button id="forgotLoginCodeBtn" class="link-button" type="button">Quên mật khẩu?</button>
-            <details class="sheet-config">
-              <summary>Cấu hình Google Sheet</summary>
-              <label class="sheet-url-field">Apps Script Web App URL <input id="googleSheetUrl" placeholder="https://script.google.com/macros/s/..." /></label>
-            </details>
-            <p id="syncStatus" class="sync-status">Chưa cấu hình đồng bộ.</p>
           </div>
 
           <div class="actions">

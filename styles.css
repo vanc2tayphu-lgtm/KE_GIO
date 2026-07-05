@@ -35,6 +35,20 @@ textarea {
   min-height: 100vh;
 }
 
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #c8b8ff 0%, #eef4ff 100%);
+}
+
+.login-overlay.hidden {
+  display: none;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: 360px minmax(0, 1fr);
@@ -110,7 +124,11 @@ label {
 }
 
 .login-panel {
-  padding: 22px;
+  width: min(480px, 100%);
+  padding: 36px 40px 30px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(77, 58, 161, 0.18);
 }
 
 .login-heading {
@@ -189,6 +207,10 @@ label {
 
 .sheet-config {
   margin-top: 10px;
+}
+
+.sheet-config.hidden {
+  display: none;
 }
 
 .sheet-config summary {
