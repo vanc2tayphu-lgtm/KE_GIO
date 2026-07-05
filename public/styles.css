@@ -69,6 +69,11 @@ textarea {
   margin-bottom: 20px;
 }
 
+.brand > div:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+
 .brand-mark {
   display: grid;
   place-items: center;
@@ -96,6 +101,22 @@ textarea {
 .section-heading p,
 label {
   color: var(--muted);
+}
+
+.logout-button {
+  min-height: 34px;
+  padding: 7px 10px;
+  color: var(--accent-dark);
+  background: var(--soft);
+  border: 1px solid #bfdfd6;
+  border-radius: 7px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.logout-button:hover {
+  color: white;
+  background: var(--accent-dark);
 }
 
 .panel,

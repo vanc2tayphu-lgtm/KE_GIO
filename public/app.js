@@ -318,6 +318,17 @@ function setLoginOverlayVisible(visible) {
   els.loginOverlay.classList.toggle("hidden", !visible);
 }
 
+function logoutTeacher() {
+  saveCurrentRecord();
+  localStorage.removeItem(loginSessionKey());
+  els.loginCode.value = "";
+  showLoggedOutTeacherSelect();
+  updateSheetConfigVisibility();
+  setLoginOverlayVisible(true);
+  setSyncStatus("Đã đăng xuất. Vui lòng đăng nhập để tiếp tục.", "success");
+  renderAll();
+}
+
 function getLoginSession() {
   try {
     return JSON.parse(localStorage.getItem(loginSessionKey()) || "null");
@@ -1776,6 +1787,7 @@ function init() {
   document.querySelector("#leaderSummaryBtn").addEventListener("click", exportLeaderSummary);
   document.querySelector("#loginBtn").addEventListener("click", loginTeacher);
   document.querySelector("#forgotLoginCodeBtn").addEventListener("click", requestLoginSecurityCode);
+  document.querySelector("#logoutBtn").addEventListener("click", logoutTeacher);
 }
 
 window.__keGio = {
