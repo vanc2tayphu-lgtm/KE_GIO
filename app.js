@@ -321,6 +321,17 @@ function storedRecord(teacherId, month) {
   return saved ? JSON.parse(saved) : null;
 }
 
+function teachersWithSavedRecords() {
+  const months = summaryMonths();
+  const savedTeachers = teachers.filter((teacher) =>
+    months.some((month) => localStorage.getItem(recordStorageKey(teacher.id, month)))
+  );
+  if (!savedTeachers.some((teacher) => teacher.id === state.teacherId)) {
+    savedTeachers.push({ ...state.profile, id: state.teacherId });
+  }
+  return savedTeachers;
+}
+
 function summaryMonths() {
   return monthsFromWeeks().filter((month) => {
     const monthNumber = Number(month.slice(5, 7));
@@ -697,7 +708,7 @@ async function exportTeacherSummary() {
 
 async function exportLeaderSummary() {
   saveCurrentRecord();
-  const blob = await buildSummaryXlsxBlob(teachers, "TỔNG HỢP KÊ GIỜ GIÁO VIÊN");
+  const blob = await buildSummaryXlsxBlob(teachersWithSavedRecords(), "TỔNG HỢP KÊ GIỜ GIÁO VIÊN");
   downloadBlob(blob, "tong-hop-ke-gio-lanh-dao.xlsx");
 }
 
@@ -737,6 +748,21 @@ function summaryWorksheetXml(teacherList, title) {
   const merges = [`A1:${lastCol}1`, "A3:A4", "B3:B4", "C3:C4"];
   const set = (addr, value, style = 0) => cells.set(addr, { value, style });
   const setN = (addr, value, style = 0) => cells.set(addr, { value, style, type: "n" });
+  const setStyle = (addr, style) => {
+    const cell = cells.get(addr) || { value: "" };
+    cell.style = style;
+    cells.set(addr, cell);
+  };
+  const styleRange = (ref, style) => {
+    const [start, end] = ref.split(":");
+    const a = parseCellRef(start);
+    const b = parseCellRef(end || start);
+    for (let row = a.row; row <= b.row; row += 1) {
+      for (let col = a.col; col <= b.col; col += 1) {
+        setStyle(`${colName(col)}${row}`, style);
+      }
+    }
+  };
 
   set("A1", title, 4);
   set("A3", "Số tt", 9);
@@ -781,6 +807,10 @@ function summaryWorksheetXml(teacherList, title) {
   });
 
   const rowCount = Math.max(5, totalRow);
+  styleRange(`A3:${lastCol}4`, 9);
+  styleRange(`A5:${lastCol}${rowCount}`, 8);
+  styleRange(`B5:C${rowCount}`, 25);
+  styleRange(`A${totalRow}:${lastCol}${totalRow}`, 16);
   const rows = Array.from({ length: rowCount }, (_, i) => {
     const r = i + 1;
     const rowCells = [];

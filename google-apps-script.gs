@@ -40,6 +40,7 @@ function doPost(e) {
     sheet.getRange(row, TEACHER_KEY_COL).setValue(teacherKey_(payload));
     sheet.getRange(row, UPDATED_AT_COL).setValue(new Date());
     renumberTeachers_(sheet);
+    updateTotalsRow_(sheet);
     styleDataRows_(sheet);
 
     return json_({ ok: true, row });
@@ -104,25 +105,37 @@ function ensureSheetLayout_(sheet) {
 
 function findOrCreateTeacherRow_(sheet, payload) {
   const key = teacherKey_(payload);
-  const lastRow = Math.max(sheet.getLastRow(), HEADER_ROWS);
-  if (lastRow >= DATA_START_ROW) {
-    const keys = sheet.getRange(DATA_START_ROW, TEACHER_KEY_COL, lastRow - HEADER_ROWS, 1).getValues().flat();
+  const lastDataRow = getLastTeacherRow_(sheet);
+  if (lastDataRow >= DATA_START_ROW) {
+    const keys = sheet.getRange(DATA_START_ROW, TEACHER_KEY_COL, lastDataRow - HEADER_ROWS, 1).getValues().flat();
     const keyIndex = keys.findIndex((value) => String(value) === String(key));
     if (keyIndex >= 0) return DATA_START_ROW + keyIndex;
 
-    const names = sheet.getRange(DATA_START_ROW, 2, lastRow - HEADER_ROWS, 1).getValues().flat();
+    const names = sheet.getRange(DATA_START_ROW, 2, lastDataRow - HEADER_ROWS, 1).getValues().flat();
     const nameIndex = names.findIndex((value) => String(value) === String(payload.teacherName || ""));
     if (nameIndex >= 0) return DATA_START_ROW + nameIndex;
   }
-  return lastRow + 1;
+  return lastDataRow + 1;
 }
 
 function renumberTeachers_(sheet) {
-  const lastRow = sheet.getLastRow();
+  const lastRow = getLastTeacherRow_(sheet);
   if (lastRow < DATA_START_ROW) return;
   const count = lastRow - HEADER_ROWS;
   const values = Array.from({ length: count }, (_, index) => [index + 1]);
   sheet.getRange(DATA_START_ROW, 1, count, 1).setValues(values);
+}
+
+function updateTotalsRow_(sheet) {
+  const lastTeacherRow = getLastTeacherRow_(sheet);
+  if (lastTeacherRow < DATA_START_ROW) return;
+  const totalRow = lastTeacherRow + 1;
+  sheet.getRange(totalRow, 1, 1, VISIBLE_COLS).clearContent();
+  sheet.getRange(totalRow, 2).setValue("TỔNG");
+  for (let col = FIRST_MONTH_COL; col <= VISIBLE_COLS; col += 1) {
+    const letter = columnLetter_(col);
+    sheet.getRange(totalRow, col).setFormula(`=SUM(${letter}${DATA_START_ROW}:${letter}${lastTeacherRow})`);
+  }
 }
 
 function styleDataRows_(sheet) {
@@ -137,10 +150,37 @@ function styleDataRows_(sheet) {
   sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROWS, 1).setHorizontalAlignment("center");
   sheet.getRange(DATA_START_ROW, FIRST_MONTH_COL, lastRow - HEADER_ROWS, VISIBLE_COLS - FIRST_MONTH_COL + 1)
     .setHorizontalAlignment("center");
+  const totalRow = getLastTeacherRow_(sheet) + 1;
+  if (totalRow >= DATA_START_ROW && totalRow <= lastRow) {
+    sheet.getRange(totalRow, 1, 1, VISIBLE_COLS).setFontWeight("bold");
+  }
 }
 
 function teacherKey_(payload) {
   return payload.teacherId || payload.teacherName || "";
+}
+
+function getLastTeacherRow_(sheet) {
+  const lastRow = Math.max(sheet.getLastRow(), HEADER_ROWS);
+  if (lastRow < DATA_START_ROW) return HEADER_ROWS;
+  const values = sheet.getRange(DATA_START_ROW, 2, lastRow - HEADER_ROWS, 1).getValues().flat();
+  let last = HEADER_ROWS;
+  values.forEach((value, index) => {
+    if (value && String(value).trim().toUpperCase() !== "TỔNG") {
+      last = DATA_START_ROW + index;
+    }
+  });
+  return last;
+}
+
+function columnLetter_(column) {
+  let letter = "";
+  while (column > 0) {
+    const temp = (column - 1) % 26;
+    letter = String.fromCharCode(temp + 65) + letter;
+    column = Math.floor((column - temp - 1) / 26);
+  }
+  return letter;
 }
 
 function monthTitle_(month) {
