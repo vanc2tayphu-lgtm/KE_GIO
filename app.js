@@ -111,7 +111,11 @@ function monthLabel(month) {
 }
 
 function storageKey() {
-  return `ke-gio:${state.teacherId}:${state.month}`;
+  return recordStorageKey(state.teacherId, state.month);
+}
+
+function recordStorageKey(teacherId, month) {
+  return `ke-gio:${teacherId}:${month}`;
 }
 
 function googleSheetUrlKey() {
@@ -278,6 +282,50 @@ function calculate() {
   );
 
   return { rows, totals };
+}
+
+function calculateRecord(record) {
+  const profile = record?.profile || {};
+  const entries = record?.entries || [];
+  const allowances = record?.allowances || [];
+  const weeklyNorm = numberValue(profile.weeklyNorm);
+  const allowancePerWeek = allowances.reduce((sum, item) => sum + numberValue(item.periods), 0);
+  const rows = entries.map((entry) => {
+    const active = entry.status === "teaching";
+    const regular = active ? numberValue(entry.regular) : 0;
+    const extra = active ? numberValue(entry.extra) : 0;
+    const reduction = active ? numberValue(entry.reduction) + allowancePerWeek : 0;
+    const actual = regular + extra;
+    const norm = active ? weeklyNorm : 0;
+    const remainingNorm = Math.max(norm - reduction, 0);
+    const diff = actual - remainingNorm;
+    return { ...entry, regular, extra, reduction, actual, norm, remainingNorm, diff };
+  });
+  const totals = rows.reduce(
+    (acc, row) => {
+      acc.actual += row.actual;
+      acc.norm += row.norm;
+      acc.reduction += row.reduction;
+      acc.remainingNorm += row.remainingNorm;
+      acc.diff += row.diff;
+      return acc;
+    },
+    { actual: 0, norm: 0, reduction: 0, remainingNorm: 0, diff: 0 }
+  );
+  return { rows, totals };
+}
+
+function storedRecord(teacherId, month) {
+  if (teacherId === state.teacherId && month === state.month) return JSON.parse(JSON.stringify(state));
+  const saved = localStorage.getItem(recordStorageKey(teacherId, month));
+  return saved ? JSON.parse(saved) : null;
+}
+
+function summaryMonths() {
+  return monthsFromWeeks().filter((month) => {
+    const monthNumber = Number(month.slice(5, 7));
+    return monthNumber >= 9 || monthNumber <= 5;
+  });
 }
 
 function resultText(value) {
@@ -628,19 +676,36 @@ function resetForSelection() {
 async function exportExcel() {
   saveCurrentRecord();
   const blob = await buildXlsxBlob();
+  downloadBlob(blob, `ke-gio-${state.profile.name || "giao-vien"}-${state.month}.xlsx`);
+}
+
+function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `ke-gio-${state.profile.name || "giao-vien"}-${state.month}.xlsx`.replace(/\s+/g, "-");
+  a.download = filename.replace(/\s+/g, "-");
   a.click();
   URL.revokeObjectURL(url);
+}
+
+async function exportTeacherSummary() {
+  saveCurrentRecord();
+  const teacher = { ...state.profile, id: state.teacherId };
+  const blob = await buildSummaryXlsxBlob([teacher], `THỐNG KÊ GIÁO VIÊN - ${state.profile.name || ""}`);
+  downloadBlob(blob, `thong-ke-${state.profile.name || "giao-vien"}.xlsx`);
+}
+
+async function exportLeaderSummary() {
+  saveCurrentRecord();
+  const blob = await buildSummaryXlsxBlob(teachers, "TỔNG HỢP KÊ GIỜ GIÁO VIÊN");
+  downloadBlob(blob, "tong-hop-ke-gio-lanh-dao.xlsx");
 }
 
 async function buildXlsxBlob() {
   const files = {
     "[Content_Types].xml": contentTypesXml(),
     "_rels/.rels": rootRelsXml(),
-    "xl/workbook.xml": workbookXml(),
+    "xl/workbook.xml": workbookXml("Bảng kê"),
     "xl/_rels/workbook.xml.rels": workbookRelsXml(),
     "xl/styles.xml": stylesXml(),
     "xl/worksheets/sheet1.xml": worksheetXml()
@@ -648,6 +713,84 @@ async function buildXlsxBlob() {
   return new Blob([zipFiles(files)], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   });
+}
+
+async function buildSummaryXlsxBlob(teacherList, title) {
+  const files = {
+    "[Content_Types].xml": contentTypesXml(),
+    "_rels/.rels": rootRelsXml(),
+    "xl/workbook.xml": workbookXml("Tổng hợp"),
+    "xl/_rels/workbook.xml.rels": workbookRelsXml(),
+    "xl/styles.xml": stylesXml(),
+    "xl/worksheets/sheet1.xml": summaryWorksheetXml(teacherList, title)
+  };
+  return new Blob([zipFiles(files)], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+}
+
+function summaryWorksheetXml(teacherList, title) {
+  const months = summaryMonths();
+  const totalCols = 3 + months.length * 3;
+  const lastCol = colName(totalCols);
+  const cells = new Map();
+  const merges = [`A1:${lastCol}1`, "A3:A4", "B3:B4", "C3:C4"];
+  const set = (addr, value, style = 0) => cells.set(addr, { value, style });
+  const setN = (addr, value, style = 0) => cells.set(addr, { value, style, type: "n" });
+
+  set("A1", title, 4);
+  set("A3", "Số tt", 9);
+  set("B3", "Họ tên GV", 9);
+  set("C3", "Môn", 9);
+  months.forEach((month, monthIndex) => {
+    const col = 4 + monthIndex * 3;
+    const start = colName(col);
+    const end = colName(col + 2);
+    merges.push(`${start}3:${end}3`);
+    set(`${start}3`, `THÁNG ${Number(month.slice(5, 7))}`, 9);
+    ["Tổng", "Thừa", "Thiếu"].forEach((label, offset) => set(`${colName(col + offset)}4`, label, 10));
+  });
+
+  teacherList.forEach((teacher, index) => {
+    const row = 5 + index;
+    setN(`A${row}`, index + 1, 8);
+    set(`B${row}`, teacher.name || "", 25);
+    set(`C${row}`, teacher.subject || "", 25);
+    months.forEach((month, monthIndex) => {
+      const record = storedRecord(teacher.id, month);
+      const totals = record ? calculateRecord(record).totals : { actual: 0, diff: 0 };
+      const col = 4 + monthIndex * 3;
+      setN(`${colName(col)}${row}`, totals.actual || "", 8);
+      setN(`${colName(col + 1)}${row}`, Math.max(totals.diff, 0) || "", 8);
+      setN(`${colName(col + 2)}${row}`, Math.max(-totals.diff, 0) || "", 8);
+    });
+  });
+
+  const rowCount = Math.max(5, 4 + teacherList.length);
+  const rows = Array.from({ length: rowCount }, (_, i) => {
+    const r = i + 1;
+    const rowCells = [];
+    for (let c = 1; c <= totalCols; c += 1) {
+      const addr = `${colName(c)}${r}`;
+      if (cells.has(addr)) rowCells.push(cellXml(addr, cells.get(addr)));
+    }
+    const height = r === 1 ? 30 : r === 3 || r === 4 ? 28 : 22;
+    return `<row r="${r}" ht="${height}" customHeight="1">${rowCells.join("")}</row>`;
+  }).join("");
+
+  const widths = ["8", "28", "22", ...months.flatMap(() => ["9", "9", "9"])];
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <dimension ref="A1:${lastCol}${rowCount}"/>
+  <sheetViews><sheetView workbookViewId="0"/></sheetViews>
+  <sheetFormatPr defaultRowHeight="15"/>
+  <cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>
+  <sheetData>${rows}</sheetData>
+  <mergeCells count="${merges.length}">${merges.map((ref) => `<mergeCell ref="${ref}"/>`).join("")}</mergeCells>
+  <printOptions horizontalCentered="1" verticalCentered="0"/>
+  <pageMargins left="0.35" right="0.25" top="0.5" bottom="0.45" header="0.2" footer="0.2"/>
+  <pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/>
+</worksheet>`;
 }
 
 function worksheetXml() {
@@ -953,7 +1096,8 @@ function stylesXml() {
     xf(3, 0, `<alignment horizontal="center"/><protection/>`),
     xf(4, 0, left),
     xf(3, 0, justifyWrap),
-    xf(3, 12, left)
+    xf(3, 12, left),
+    xf(3, 1, left)
   ];
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
@@ -973,11 +1117,11 @@ function borderXml(style, right = style, top = style, bottom = style) {
   return `<border><left style="${style}">${side(style)}</left><right style="${right}">${side(right)}</right><top style="${top}">${side(top)}</top><bottom style="${bottom}">${side(bottom)}</bottom><diagonal/></border>`;
 }
 
-function workbookXml() {
+function workbookXml(sheetName = "Bảng kê") {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
   <bookViews><workbookView xWindow="0" yWindow="0" windowWidth="16000" windowHeight="9000"/></bookViews>
-  <sheets><sheet name="Bảng kê" sheetId="1" r:id="rId1"/></sheets>
+  <sheets><sheet name="${escapeXml(sheetName)}" sheetId="1" r:id="rId1"/></sheets>
 </workbook>`;
 }
 
@@ -1159,11 +1303,16 @@ function init() {
     window.setTimeout(restoreTitle, 1000);
   });
   document.querySelector("#exportBtn").addEventListener("click", exportExcel);
+  document.querySelector("#teacherSummaryBtn").addEventListener("click", exportTeacherSummary);
+  document.querySelector("#leaderSummaryBtn").addEventListener("click", exportLeaderSummary);
 }
 
 window.__keGio = {
   buildXlsxBlob,
-  exportExcel
+  buildSummaryXlsxBlob,
+  exportExcel,
+  exportTeacherSummary,
+  exportLeaderSummary
 };
 
 init();
