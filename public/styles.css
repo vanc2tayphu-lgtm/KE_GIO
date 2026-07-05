@@ -109,6 +109,21 @@ label {
   margin-bottom: 10px;
 }
 
+.sync-status {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.sync-status.success {
+  color: var(--accent-dark);
+}
+
+.sync-status.error {
+  color: var(--danger);
+}
+
 input,
 select,
 textarea {

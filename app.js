@@ -71,6 +71,8 @@ const els = {
   salaryLevel: document.querySelector("#salaryLevel"),
   salaryCoeff: document.querySelector("#salaryCoeff"),
   weeklyNorm: document.querySelector("#weeklyNorm"),
+  googleSheetUrl: document.querySelector("#googleSheetUrl"),
+  syncStatus: document.querySelector("#syncStatus"),
   allowanceList: document.querySelector("#allowanceList"),
   weekRows: document.querySelector("#weekRows"),
   weekHint: document.querySelector("#weekHint"),
@@ -110,6 +112,10 @@ function monthLabel(month) {
 
 function storageKey() {
   return `ke-gio:${state.teacherId}:${state.month}`;
+}
+
+function googleSheetUrlKey() {
+  return "ke-gio:google-sheet-url";
 }
 
 function monthsFromWeeks() {
@@ -162,6 +168,54 @@ function loadCurrentRecord() {
 function saveCurrentRecord() {
   syncProfileFromInputs();
   localStorage.setItem(storageKey(), JSON.stringify(state));
+}
+
+function saveGoogleSheetUrl() {
+  localStorage.setItem(googleSheetUrlKey(), els.googleSheetUrl.value.trim());
+}
+
+function setSyncStatus(message, type = "") {
+  els.syncStatus.textContent = message;
+  els.syncStatus.className = `sync-status${type ? ` ${type}` : ""}`;
+}
+
+function buildMonthlySummaryPayload() {
+  const { totals } = calculate();
+  return {
+    action: "upsertMonthlySummary",
+    teacherId: state.teacherId,
+    teacherName: state.profile.name,
+    subject: state.profile.subject,
+    month: state.month,
+    actual: Number(totals.actual.toFixed(2)),
+    surplus: Number(Math.max(totals.diff, 0).toFixed(2)),
+    shortage: Number(Math.max(-totals.diff, 0).toFixed(2)),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+async function syncMonthlySummaryToGoogleSheet() {
+  const url = els.googleSheetUrl.value.trim();
+  saveGoogleSheetUrl();
+  if (!url) {
+    setSyncStatus("Chưa cấu hình đồng bộ Google Sheet.");
+    return false;
+  }
+
+  setSyncStatus("Đang gửi tổng hợp tháng lên Google Sheet...");
+  try {
+    await fetch(url, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(buildMonthlySummaryPayload())
+    });
+    setSyncStatus("Đã gửi tổng hợp tháng lên Google Sheet.", "success");
+    return true;
+  } catch (error) {
+    setSyncStatus("Không gửi được Google Sheet. Kiểm tra lại Apps Script URL.", "error");
+    return false;
+  }
 }
 
 function syncProfileFromInputs() {
@@ -1061,6 +1115,8 @@ function init() {
   });
   els.monthSelect.value = state.month;
   els.teacherSelect.value = state.teacherId;
+  els.googleSheetUrl.value = localStorage.getItem(googleSheetUrlKey()) || "";
+  setSyncStatus(els.googleSheetUrl.value ? "Đã cấu hình Google Sheet." : "Chưa cấu hình đồng bộ.");
   resetForSelection();
 
   els.monthSelect.addEventListener("change", () => {
@@ -1081,9 +1137,14 @@ function init() {
     state.allowances.push({ name: "", periods: 0 });
     renderAll();
   });
-  document.querySelector("#saveBtn").addEventListener("click", () => {
+  els.googleSheetUrl.addEventListener("input", () => {
+    saveGoogleSheetUrl();
+    setSyncStatus(els.googleSheetUrl.value.trim() ? "Đã cấu hình Google Sheet." : "Chưa cấu hình đồng bộ.");
+  });
+  document.querySelector("#saveBtn").addEventListener("click", async () => {
     saveCurrentRecord();
-    alert("Đã lưu bảng kê trên trình duyệt này.");
+    await syncMonthlySummaryToGoogleSheet();
+    alert("Đã lưu bảng kê tháng này.");
   });
   document.querySelector("#printBtn").addEventListener("click", () => {
     saveCurrentRecord();
