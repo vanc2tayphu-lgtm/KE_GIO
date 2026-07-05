@@ -60,9 +60,11 @@
           <div class="panel">
             <h2>Tổng hợp Google Sheet</h2>
             <label>Apps Script Web App URL <input id="googleSheetUrl" placeholder="https://script.google.com/macros/s/..." /></label>
+            <label>Email đăng nhập <input id="loginEmail" type="email" autocomplete="username" placeholder="email trong Google Sheet" /></label>
+            <label>Mã bảo mật <input id="loginCode" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="6 chữ số" /></label>
             <div class="two-cols">
-              <button id="loadTeachersBtn" class="secondary" type="button">Tải danh sách GV</button>
-              <button id="forgotCodeBtn" class="secondary" type="button">Đổi mã</button>
+              <button id="loginBtn" type="button">Đăng nhập</button>
+              <button id="forgotLoginCodeBtn" class="secondary" type="button">Quên mã</button>
             </div>
             <p id="syncStatus" class="sync-status">Chưa cấu hình đồng bộ.</p>
           </div>

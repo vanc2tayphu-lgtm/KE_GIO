@@ -157,6 +157,8 @@ const els = {
   salaryCoeff: document.querySelector("#salaryCoeff"),
   weeklyNorm: document.querySelector("#weeklyNorm"),
   googleSheetUrl: document.querySelector("#googleSheetUrl"),
+  loginEmail: document.querySelector("#loginEmail"),
+  loginCode: document.querySelector("#loginCode"),
   syncStatus: document.querySelector("#syncStatus"),
   allowanceList: document.querySelector("#allowanceList"),
   weekRows: document.querySelector("#weekRows"),
@@ -220,6 +222,10 @@ function googleSheetUrlKey() {
 
 function securityCodeKey(teacherCode) {
   return `ke-gio:security-code:${teacherCode || state.teacherId}`;
+}
+
+function loginSessionKey() {
+  return "ke-gio:login-session";
 }
 
 function monthsFromWeeks() {
@@ -289,6 +295,30 @@ function saveGoogleSheetUrl() {
   localStorage.setItem(googleSheetUrlKey(), els.googleSheetUrl.value.trim());
 }
 
+function getLoginSession() {
+  try {
+    return JSON.parse(localStorage.getItem(loginSessionKey()) || "null");
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveLoginSession(session) {
+  localStorage.setItem(loginSessionKey(), JSON.stringify(session));
+}
+
+function showLoggedOutTeacherSelect() {
+  teachers = [];
+  state.teacherId = "";
+  state.profile = { ...defaultTeacherInfo, name: "" };
+  state.entries = defaultEntries();
+  state.allowances = [];
+  els.teacherSelect.innerHTML = '<option value="">Vui lòng đăng nhập</option>';
+  els.teacherSelect.value = "";
+  els.teacherSelect.disabled = true;
+  setProfileInputs();
+}
+
 function setSyncStatus(message, type = "") {
   els.syncStatus.textContent = message;
   els.syncStatus.className = `sync-status${type ? ` ${type}` : ""}`;
@@ -328,12 +358,10 @@ async function syncMonthlySummaryToGoogleSheet() {
   }
 
   const teacherCode = state.profile.teacherCode || state.teacherId;
-  let securityCode = localStorage.getItem(securityCodeKey(teacherCode)) || "";
+  const session = getLoginSession();
+  const securityCode = session?.teacherCode === teacherCode ? session.securityCode : "";
   if (!securityCode) {
-    securityCode = window.prompt("Nhập mã bảo mật 6 số của giáo viên để lưu bảng kê:");
-  }
-  if (!securityCode) {
-    setSyncStatus("Đã hủy lưu Google Sheet vì chưa nhập mã bảo mật.", "error");
+    setSyncStatus("Vui lòng đăng nhập bằng email và mã bảo mật trước khi lưu.", "error");
     return false;
   }
 
@@ -344,12 +372,11 @@ async function syncMonthlySummaryToGoogleSheet() {
       securityCode
     });
     if (result.ok) {
-      localStorage.setItem(securityCodeKey(teacherCode), securityCode);
       setSyncStatus("Đã gửi tổng hợp tháng lên Google Sheet.", "success");
       return true;
     }
     if (String(result.error || "").includes("Mã bảo mật")) {
-      localStorage.removeItem(securityCodeKey(teacherCode));
+      localStorage.removeItem(loginSessionKey());
     }
     setSyncStatus(friendlyGoogleError(result.error) || "Mã bảo mật không đúng.", "error");
     return false;
@@ -489,6 +516,92 @@ async function requestNewSecurityCode() {
     if (result.ok) {
       localStorage.removeItem(securityCodeKey(teacherCode));
       setSyncStatus(`Đã đổi mã. Xin vào mail ${result.email || email} để lấy mã mới.`, "success");
+    } else {
+      setSyncStatus(friendlyGoogleError(result.error) || "Không gửi được mã mới.", "error");
+    }
+  } catch (error) {
+    setSyncStatus("Không gửi được mã mới. Kiểm tra lại Apps Script URL.", "error");
+  }
+}
+
+function applyLoggedInTeacher(teacher, securityCode = "") {
+  const loggedTeacher = {
+    ...defaultTeacherInfo,
+    id: teacher.id || slugifyVietnamese(`${teacher.teacherCode || ""}-${teacher.name || ""}`),
+    teacherCode: teacher.teacherCode || "",
+    name: teacher.name || "",
+    subject: teacher.subject || "",
+    email: teacher.email || ""
+  };
+  teachers = [loggedTeacher];
+  state.teacherId = loggedTeacher.id;
+  state.profile = { ...loggedTeacher };
+  populateTeacherSelect();
+  els.teacherSelect.value = state.teacherId;
+  els.teacherSelect.disabled = true;
+  if (securityCode) {
+    saveLoginSession({
+      teacherCode: loggedTeacher.teacherCode,
+      email: loggedTeacher.email,
+      securityCode,
+      teacher: loggedTeacher
+    });
+  }
+  resetForSelection();
+}
+
+async function loginTeacher() {
+  const url = els.googleSheetUrl.value.trim();
+  const email = els.loginEmail.value.trim();
+  const securityCode = els.loginCode.value.trim();
+  saveGoogleSheetUrl();
+  if (!url) {
+    setSyncStatus("Chưa có Apps Script URL để đăng nhập.", "error");
+    return;
+  }
+  if (!email) {
+    setSyncStatus("Vui lòng nhập email đăng nhập.", "error");
+    return;
+  }
+  if (!/^\d{6}$/.test(securityCode)) {
+    setSyncStatus("Vui lòng nhập mã bảo mật 6 chữ số.", "error");
+    return;
+  }
+  setSyncStatus("Đang đăng nhập...");
+  try {
+    const result = await requestGoogleScript(url, { action: "login", email, securityCode });
+    if (!result.ok) {
+      setSyncStatus(friendlyGoogleError(result.error) || "Không đăng nhập được.", "error");
+      return;
+    }
+    applyLoggedInTeacher(result.teacher, securityCode);
+    setSyncStatus(`Đã đăng nhập: ${result.teacher.name}.`, "success");
+  } catch (error) {
+    setSyncStatus("Không đăng nhập được. Kiểm tra lại Apps Script URL.", "error");
+  }
+}
+
+async function requestLoginSecurityCode() {
+  const url = els.googleSheetUrl.value.trim();
+  const email = els.loginEmail.value.trim();
+  saveGoogleSheetUrl();
+  if (!url) {
+    setSyncStatus("Chưa có Apps Script URL để gửi mã.", "error");
+    return;
+  }
+  if (!email) {
+    setSyncStatus("Nhập email ở ô Email đăng nhập, rồi bấm Quên mã để lấy mã mới.", "error");
+    return;
+  }
+  setSyncStatus(`Đang gửi mã mới về ${email}...`);
+  try {
+    const result = await requestGoogleScript(url, { action: "resetCode", email });
+    if (result.ok) {
+      localStorage.removeItem(loginSessionKey());
+      els.loginCode.value = "";
+      showLoggedOutTeacherSelect();
+      renderAll();
+      setSyncStatus(`Đã gửi mã mới. Vui lòng vào mail ${result.email || email} để lấy mã.`, "success");
     } else {
       setSyncStatus(friendlyGoogleError(result.error) || "Không gửi được mã mới.", "error");
     }
@@ -1571,12 +1684,19 @@ function init() {
     option.textContent = monthLabel(month);
     els.monthSelect.appendChild(option);
   });
-  populateTeacherSelect();
   els.monthSelect.value = state.month;
-  els.teacherSelect.value = state.teacherId;
   els.googleSheetUrl.value = localStorage.getItem(googleSheetUrlKey()) || "";
-  setSyncStatus(els.googleSheetUrl.value ? "Đã cấu hình Google Sheet." : "Chưa cấu hình đồng bộ.");
-  resetForSelection();
+  const session = getLoginSession();
+  if (session?.teacher && session?.securityCode) {
+    els.loginEmail.value = session.email || session.teacher.email || "";
+    els.loginCode.value = session.securityCode || "";
+    applyLoggedInTeacher(session.teacher, session.securityCode);
+    setSyncStatus(`Đã đăng nhập: ${session.teacher.name}.`, "success");
+  } else {
+    showLoggedOutTeacherSelect();
+    setSyncStatus(els.googleSheetUrl.value ? "Vui lòng đăng nhập bằng email và mã bảo mật." : "Chưa cấu hình đồng bộ.");
+    renderAll();
+  }
 
   els.monthSelect.addEventListener("change", () => {
     saveCurrentRecord();
@@ -1585,6 +1705,7 @@ function init() {
     renderAll();
   });
   els.teacherSelect.addEventListener("change", () => {
+    if (els.teacherSelect.disabled) return;
     saveCurrentRecord();
     state.teacherId = els.teacherSelect.value;
     resetForSelection();
@@ -1603,8 +1724,8 @@ function init() {
   });
   document.querySelector("#saveBtn").addEventListener("click", async () => {
     saveCurrentRecord();
-    await syncMonthlySummaryToGoogleSheet();
-    alert("Đã lưu bảng kê tháng này.");
+    const synced = await syncMonthlySummaryToGoogleSheet();
+    alert(synced ? "Đã lưu bảng kê tháng này." : "Đã lưu trên máy, nhưng chưa gửi được lên Google Sheet.");
   });
   document.querySelector("#printBtn").addEventListener("click", () => {
     saveCurrentRecord();
@@ -1621,8 +1742,8 @@ function init() {
   document.querySelector("#exportBtn").addEventListener("click", exportExcel);
   document.querySelector("#teacherSummaryBtn").addEventListener("click", exportTeacherSummary);
   document.querySelector("#leaderSummaryBtn").addEventListener("click", exportLeaderSummary);
-  document.querySelector("#loadTeachersBtn").addEventListener("click", loadTeacherDirectoryFromGoogleSheet);
-  document.querySelector("#forgotCodeBtn").addEventListener("click", requestNewSecurityCode);
+  document.querySelector("#loginBtn").addEventListener("click", loginTeacher);
+  document.querySelector("#forgotLoginCodeBtn").addEventListener("click", requestLoginSecurityCode);
 }
 
 window.__keGio = {

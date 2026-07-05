@@ -92,6 +92,7 @@ function handleAction_(payload) {
     ensureTeacherDirectory_();
     return { ok: true, sheetName: SHEET_NAME };
   }
+  if (payload.action === "login") return loginTeacher_(payload);
   if (payload.action === "teachers") return teachersResponse_();
   if (payload.action === "resetCode") return resetSecurityCode_(payload);
   if (payload.action === "upsertMonthlySummary") return upsertMonthlySummary_(payload);
@@ -221,6 +222,30 @@ function teachersResponse_() {
     email: teacher.email
   }));
   return { ok: true, teachers };
+}
+
+function loginTeacher_(payload) {
+  const cleanEmail = String(payload.email || "").trim().toLowerCase();
+  const securityCode = String(payload.securityCode || "").trim();
+  if (!cleanEmail) throw new Error("Vui lòng nhập email đăng nhập.");
+  if (!/^\d{6}$/.test(securityCode)) throw new Error("Vui lòng nhập mã bảo mật 6 chữ số.");
+
+  const teacher = teacherRecords_().find((item) => item.email.toLowerCase() === cleanEmail);
+  if (!teacher) throw new Error("Nhập sai mail.");
+  if (String(teacher.securityCode) !== securityCode) {
+    throw new Error("Sai mã. Bạn có thể bấm Quên mã và vào mail trên để lấy mã.");
+  }
+
+  return {
+    ok: true,
+    teacher: {
+      id: slugify_(teacher.teacherCode + "-" + teacher.name),
+      teacherCode: teacher.teacherCode,
+      name: teacher.name,
+      subject: teacher.subject,
+      email: teacher.email
+    }
+  };
 }
 
 function validateTeacher_(payload) {
