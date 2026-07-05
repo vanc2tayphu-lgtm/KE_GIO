@@ -434,6 +434,7 @@ th {
 
 .main-report-table th,
 .main-report-table td {
+  border: 2px solid #000;
   font-size: 14px;
 }
 
@@ -481,6 +482,8 @@ th {
 
 .page-two {
   padding-top: 92px;
+  break-before: page;
+  page-break-before: always;
 }
 
 .page-two h3 {

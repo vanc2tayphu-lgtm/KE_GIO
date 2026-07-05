@@ -790,14 +790,14 @@ function worksheetXml() {
   <dimension ref="A1:N79"/>
   <sheetViews><sheetView workbookViewId="0"/></sheetViews>
   <sheetFormatPr defaultRowHeight="15"/>
-  <cols>${[8.7265625,4.7265625,13,5.26953125,4.81640625,6.1796875,7,7.453125,5.7265625,9.5,9.5,7.453125,6.7265625,9.5]
+  <cols>${[8.7265625,4.7265625,13,5.26953125,4.81640625,6.1796875,7,7.78,5.7265625,7.89,8.11,10.5,6.89,9.5]
     .map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>
   <sheetData>${sheetData}</sheetData>
   <mergeCells count="${xlsxMerges().length}">${xlsxMerges().map((ref) => `<mergeCell ref="${ref}"/>`).join("")}</mergeCells>
   <printOptions horizontalCentered="0" verticalCentered="0"/>
   <pageMargins left="0.62" right="0.21" top="0.59" bottom="0.5" header="0.47" footer="0.38"/>
-  <pageSetup paperSize="1" orientation="portrait" fitToWidth="1" fitToHeight="2"/>
-  <rowBreaks count="1" manualBreakCount="1"><brk id="43" max="16383" man="1"/></rowBreaks>
+  <pageSetup paperSize="1" orientation="portrait" fitToWidth="1" fitToHeight="0"/>
+  <rowBreaks count="1" manualBreakCount="1"><brk id="43" min="0" max="16383" man="1"/></rowBreaks>
 </worksheet>`;
 }
 
@@ -858,7 +858,10 @@ function stylesXml() {
     borderXml("thin", "thin", "medium", "dashed"),
     borderXml("thin", "thin", "dashed", "dashed"),
     borderXml("thin", "thin", "dashed", "medium"),
-    borderXml("medium")
+    borderXml("medium"),
+    borderXml("medium", "medium", "medium", "dashed"),
+    borderXml("medium", "medium", "dashed", "dashed"),
+    borderXml("medium", "medium", "dashed", "medium")
   ];
   const xf = (fontId, borderId = 0, align = "") => `<xf numFmtId="0" fontId="${fontId}" fillId="0" borderId="${borderId}" xfId="0" applyFont="1" applyBorder="${borderId ? 1 : 0}" applyAlignment="${align ? 1 : 0}">${align}</xf>`;
   const center = `<alignment horizontal="center" vertical="center"/>`;
@@ -875,12 +878,12 @@ function stylesXml() {
     xf(0, 0, center),
     xf(0, 1, centerWrap),
     xf(0, 1, center),
-    xf(5, 1, centerWrap),
-    xf(5, 1, center),
+    xf(5, 2, centerWrap),
+    xf(5, 2, center),
     xf(6, 6, centerWrap),
-    xf(6, 3, centerWrap),
-    xf(6, 4, centerWrap),
-    xf(6, 5, centerWrap),
+    xf(6, 7, centerWrap),
+    xf(6, 8, centerWrap),
+    xf(6, 9, centerWrap),
     xf(3, 2, center),
     xf(5, 2, center),
     xf(3, 0, center),
