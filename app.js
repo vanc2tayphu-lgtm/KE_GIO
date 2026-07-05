@@ -847,7 +847,7 @@ function worksheetXml() {
   <dimension ref="A1:N79"/>
   <sheetViews><sheetView workbookViewId="0"/></sheetViews>
   <sheetFormatPr defaultRowHeight="15"/>
-  <cols>${[8.7265625,4.7265625,13,5.26953125,4.81640625,6.1796875,7,7.9,5.7265625,7.89,8.11,8.11,6.89,9.5]
+  <cols>${["8.7265625","4.7265625","13","5.26953125","4.81640625","6.1796875","7","7.90","5.7265625","7.89","8.11","8.11","6.89","9.5"]
     .map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>
   <sheetData>${sheetData}</sheetData>
   <mergeCells count="${xlsxMerges().length}">${xlsxMerges().map((ref) => `<mergeCell ref="${ref}"/>`).join("")}</mergeCells>
