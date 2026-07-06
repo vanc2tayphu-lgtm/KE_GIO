@@ -815,6 +815,12 @@ function resultText(value) {
   return "Không thừa, thiếu";
 }
 
+function signatureResultText(value) {
+  if (value > 0) return `Thừa: +${formatNumber(value)} tiết`;
+  if (value < 0) return `Thiếu: -${formatNumber(Math.abs(value))} tiết`;
+  return "Không thừa, thiếu";
+}
+
 function formatNumber(value) {
   return Number(value.toFixed(2)).toLocaleString("vi-VN");
 }
@@ -941,6 +947,7 @@ function renderPreview() {
   const totalShortage = rows.reduce((sum, row) => sum + Math.max(-row.diff, 0), 0);
   const signedTotal = totals.diff > 0 ? `+${formatNumber(totals.diff)}` : totals.diff < 0 ? `-${formatNumber(Math.abs(totals.diff))}` : "0";
   const totalText = resultText(totals.diff);
+  const signatureText = signatureResultText(totals.diff);
   const allowances = [...state.allowances, {}, {}, {}].slice(0, 3);
 
   els.printArea.innerHTML = `
@@ -1082,7 +1089,7 @@ function renderPreview() {
         </div>
         <div>
           <strong>Xác nhận tổ trưởng</strong>
-          <span>${escapeHtml(totalText)}</span>
+          <span>${escapeHtml(signatureText)}</span>
           <strong class="signature-name">${escapeHtml(signers.teamLeaderName)}</strong>
         </div>
         <div>
@@ -1341,6 +1348,7 @@ function worksheetXml() {
   const totalShortage = rows.reduce((sum, row) => sum + Math.max(-row.diff, 0), 0);
   const signedTotal = totals.diff > 0 ? `+${formatNumber(totals.diff)}` : totals.diff < 0 ? `-${formatNumber(Math.abs(totals.diff))}` : "0";
   const totalText = resultText(totals.diff);
+  const signatureText = signatureResultText(totals.diff);
   const activeRows = rows.slice(0, 5);
   const weekStarts = [20, 24, 28, 32, 36];
   const cells = new Map();
@@ -1474,7 +1482,7 @@ function worksheetXml() {
   set("F55", "Xác nhận tổ trưởng", 2);
   set("J55", "Người dạy", 2);
   set("A56", signers.principalTitle, 2);
-  set("F56", totalText, 5);
+  set("F56", signatureText, 5);
   set("A61", signers.principalName, 2);
   set("F61", signers.teamLeaderName, 2);
   set("J61", state.profile.name, 2);
