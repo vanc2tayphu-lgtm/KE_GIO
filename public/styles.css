@@ -107,10 +107,12 @@ label {
   display: block;
   grid-column: 2 / 4;
   color: #b42318;
-  font-size: 17px;
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 18px;
   font-weight: 800;
-  line-height: 1.18;
+  line-height: 1.2;
   white-space: nowrap;
+  letter-spacing: 0;
 }
 
 .logout-button {
@@ -327,9 +329,15 @@ button.secondary {
 
 .app-title-banner h2 {
   margin: 0;
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 30px;
   line-height: 1.22;
   font-weight: 800;
+  letter-spacing: 0;
+}
+
+.app-title-banner h2 span {
+  display: block;
 }
 
 .view-tabs {
