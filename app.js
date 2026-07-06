@@ -46,6 +46,7 @@ const defaultTeacherInfo = {
   rankCode: "V.07.04.31",
   salaryLevel: "",
   salaryCoeff: "",
+  positionAllowance: "",
   weeklyNorm: 19
 };
 
@@ -165,6 +166,7 @@ const els = {
   rankCode: document.querySelector("#rankCode"),
   salaryLevel: document.querySelector("#salaryLevel"),
   salaryCoeff: document.querySelector("#salaryCoeff"),
+  positionAllowance: document.querySelector("#positionAllowance"),
   weeklyNorm: document.querySelector("#weeklyNorm"),
   principalTitle: document.querySelector("#principalTitle"),
   principalName: document.querySelector("#principalName"),
@@ -295,6 +297,7 @@ function loadCurrentRecord() {
       rankCode: savedProfile.rankCode || state.profile.rankCode,
       salaryLevel: savedProfile.salaryLevel || state.profile.salaryLevel,
       salaryCoeff: savedProfile.salaryCoeff || state.profile.salaryCoeff,
+      positionAllowance: savedProfile.positionAllowance || state.profile.positionAllowance,
       weeklyNorm: savedProfile.weeklyNorm ?? state.profile.weeklyNorm,
       assignment: savedProfile.assignment || state.profile.assignment
     };
@@ -496,6 +499,7 @@ function syncProfileFromInputs() {
     rankCode: els.rankCode.value.trim(),
     salaryLevel: els.salaryLevel.value.trim(),
     salaryCoeff: els.salaryCoeff.value.trim(),
+    positionAllowance: els.positionAllowance.value.trim(),
     weeklyNorm: Number(els.weeklyNorm.value || 0)
   };
 }
@@ -516,6 +520,7 @@ function setProfileInputs() {
   els.rankCode.value = state.profile.rankCode || "";
   els.salaryLevel.value = state.profile.salaryLevel || "";
   els.salaryCoeff.value = state.profile.salaryCoeff || "";
+  els.positionAllowance.value = state.profile.positionAllowance || "";
   els.weeklyNorm.value = state.profile.weeklyNorm || 0;
   setBrandTeacherName();
 }
@@ -1016,7 +1021,7 @@ function renderPreview() {
         <span>Mã ngạch :</span><span>${escapeHtml(state.profile.rankCode)}</span>
         <span>Bậc :</span><span>${escapeHtml(state.profile.salaryLevel)}</span>
         <span>HSL-cơ bản :</span><span>${escapeHtml(state.profile.salaryCoeff)}</span>
-        <span>Phụ cấp chức vụ :</span><span></span>
+        <span>Phụ cấp chức vụ :</span><span>${escapeHtml(state.profile.positionAllowance)}</span>
       </div>
       <div class="mau-line">Qui định : <strong>${formatNumber(numberValue(state.profile.weeklyNorm))}</strong>&nbsp; tiết/ tuần</div>
 
@@ -1401,6 +1406,7 @@ function worksheetXml() {
   set("I15", "HSL-cơ bản :", 5);
   set("K15", state.profile.salaryCoeff, 5);
   set("L15", "Phụ cấp chức vụ :", 5);
+  set("N15", state.profile.positionAllowance, 5);
   set("A16", "Qui định :", 5);
   setN("B16", numberValue(state.profile.weeklyNorm), 5);
   set("C16", "tiết/ tuần", 5);
@@ -1815,7 +1821,7 @@ function init() {
     state.teacherId = els.teacherSelect.value;
     resetForSelection();
   });
-  ["teacherName", "subject", "assignment", "rankCode", "salaryLevel", "salaryCoeff", "weeklyNorm"].forEach((key) => {
+  ["teacherName", "subject", "assignment", "rankCode", "salaryLevel", "salaryCoeff", "positionAllowance", "weeklyNorm"].forEach((key) => {
     els[key].addEventListener("input", refreshLiveOutputs);
     els[key].addEventListener("change", renderAll);
   });
