@@ -1840,10 +1840,22 @@ function init() {
   els.tabButtons.forEach((button) => {
     button.addEventListener("click", () => switchViewTab(button.dataset.tab));
   });
-  document.querySelector("#saveBtn").addEventListener("click", async () => {
-    saveCurrentRecord();
-    const synced = await syncMonthlySummaryToGoogleSheet();
-    alert(synced ? "Đã lưu bảng kê tháng này." : "Đã lưu trên máy, nhưng chưa gửi được lên Google Sheet.");
+  const saveBtn = document.querySelector("#saveBtn");
+  saveBtn.addEventListener("click", async () => {
+    if (saveBtn.disabled) return;
+    const originalText = saveBtn.textContent;
+    saveBtn.disabled = true;
+    saveBtn.classList.add("is-loading");
+    saveBtn.textContent = "Đang gửi...";
+    try {
+      saveCurrentRecord();
+      const synced = await syncMonthlySummaryToGoogleSheet();
+      alert(synced ? "Đã lưu bảng kê tháng này." : "Đã lưu trên máy, nhưng chưa gửi được lên Google Sheet.");
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.classList.remove("is-loading");
+      saveBtn.textContent = originalText;
+    }
   });
   document.querySelector("#printBtn").addEventListener("click", () => {
     saveCurrentRecord();
