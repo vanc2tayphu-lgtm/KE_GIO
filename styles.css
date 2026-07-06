@@ -489,10 +489,43 @@ th {
 
 .mau-meta {
   display: grid;
-  grid-template-columns: 210px 1fr 90px 1fr;
+  grid-template-columns: 210px minmax(220px, 1fr) 64px minmax(210px, 1fr) 135px 48px;
   gap: 12px 18px;
   margin-bottom: 12px;
   font-size: 17px;
+}
+
+.meta-teacher-label {
+  grid-column: 1;
+}
+
+.meta-teacher-name {
+  grid-column: 2;
+}
+
+.meta-subject-label {
+  grid-column: 3;
+}
+
+.meta-subject-name {
+  grid-column: 4 / 7;
+}
+
+.meta-assignment-label {
+  grid-column: 1;
+}
+
+.meta-assignment-value {
+  grid-column: 2 / 5;
+}
+
+.meta-total-label {
+  grid-column: 5;
+  white-space: nowrap;
+}
+
+.meta-total-value {
+  grid-column: 6;
 }
 
 .mau-line {

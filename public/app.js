@@ -939,10 +939,10 @@ function renderPreview() {
       </div>
 
       <div class="mau-meta">
-        <span>Họ tên giáo viên :</span><strong>${escapeHtml(state.profile.name)}</strong>
-        <span>Môn :</span><strong>${escapeHtml(state.profile.subject)}</strong>
-        <span>Phân công lớp dạy (cột 3) :</span><span>${escapeHtml(state.profile.assignment)}</span>
-        <span>Tổng số tiết dạy :</span><span>${formatNumber(rows[0]?.regular || 0)}</span>
+        <span class="meta-teacher-label">Họ tên giáo viên :</span><strong class="meta-teacher-name">${escapeHtml(state.profile.name)}</strong>
+        <span class="meta-subject-label">Môn :</span><strong class="meta-subject-name">${escapeHtml(state.profile.subject)}</strong>
+        <span class="meta-assignment-label">Phân công lớp dạy (cột 3) :</span><span class="meta-assignment-value">${escapeHtml(state.profile.assignment)}</span>
+        <span class="meta-total-label">Tổng số tiết dạy :</span><span class="meta-total-value">${formatNumber(rows[0]?.regular || 0)}</span>
       </div>
 
       <div class="mau-line">Kiêm nhiệm : (cột 7)</div>
