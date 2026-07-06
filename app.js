@@ -51,6 +51,11 @@ const defaultTeacherInfo = {
 
 const ADMIN_EMAIL = "phdungvt@gmail.com";
 const DEFAULT_GOOGLE_SCRIPT_URL = "";
+const defaultSigners = {
+  principalTitle: "PHÓ HIỆU TRƯỞNG",
+  principalName: "Lê Văn Cường",
+  teamLeaderName: "Lê Thị Mỹ Phụng"
+};
 
 const teacherNames = [
   "Nguyễn Duy Hoài",
@@ -160,6 +165,9 @@ const els = {
   salaryLevel: document.querySelector("#salaryLevel"),
   salaryCoeff: document.querySelector("#salaryCoeff"),
   weeklyNorm: document.querySelector("#weeklyNorm"),
+  principalTitle: document.querySelector("#principalTitle"),
+  principalName: document.querySelector("#principalName"),
+  teamLeaderName: document.querySelector("#teamLeaderName"),
   googleSheetUrl: document.querySelector("#googleSheetUrl"),
   adminConfigPanel: document.querySelector("#adminConfigPanel"),
   loginEmail: document.querySelector("#loginEmail"),
@@ -179,6 +187,7 @@ let state = {
   month: "2025-12",
   teacherId: teachers[0].id,
   profile: { ...teachers[0] },
+  signers: { ...defaultSigners },
   allowances: [],
   entries: []
 };
@@ -223,6 +232,10 @@ function recordStorageKey(teacherId, month) {
 
 function googleSheetUrlKey() {
   return "ke-gio:google-sheet-url";
+}
+
+function signerSettingsKey() {
+  return "ke-gio:signers";
 }
 
 function securityCodeKey(teacherCode) {
@@ -293,11 +306,24 @@ function loadCurrentRecord() {
 
 function saveCurrentRecord() {
   syncProfileFromInputs();
+  syncSignerInputs();
   localStorage.setItem(storageKey(), JSON.stringify(state));
 }
 
 function saveGoogleSheetUrl() {
   localStorage.setItem(googleSheetUrlKey(), els.googleSheetUrl.value.trim());
+}
+
+function loadSignerSettings() {
+  try {
+    return { ...defaultSigners, ...(JSON.parse(localStorage.getItem(signerSettingsKey()) || "{}")) };
+  } catch (error) {
+    return { ...defaultSigners };
+  }
+}
+
+function saveSignerSettings() {
+  localStorage.setItem(signerSettingsKey(), JSON.stringify(state.signers));
 }
 
 function googleScriptUrl() {
@@ -343,12 +369,14 @@ function showLoggedOutTeacherSelect() {
   teachers = [];
   state.teacherId = "";
   state.profile = { ...defaultTeacherInfo, name: "" };
+  state.signers = loadSignerSettings();
   state.entries = defaultEntries();
   state.allowances = [];
   els.teacherSelect.innerHTML = '<option value="">Vui lòng đăng nhập</option>';
   els.teacherSelect.value = "";
   els.teacherSelect.disabled = true;
   setProfileInputs();
+  setSignerInputs();
 }
 
 function setSyncStatus(message, type = "") {
@@ -454,6 +482,15 @@ function syncProfileFromInputs() {
   };
 }
 
+function syncSignerInputs() {
+  state.signers = {
+    principalTitle: els.principalTitle.value.trim() || defaultSigners.principalTitle,
+    principalName: els.principalName.value.trim() || defaultSigners.principalName,
+    teamLeaderName: els.teamLeaderName.value.trim() || defaultSigners.teamLeaderName
+  };
+  saveSignerSettings();
+}
+
 function setProfileInputs() {
   els.teacherName.value = state.profile.name || "";
   els.subject.value = state.profile.subject || "";
@@ -464,6 +501,12 @@ function setProfileInputs() {
   els.weeklyNorm.value = state.profile.weeklyNorm || 0;
 }
 
+function setSignerInputs() {
+  els.principalTitle.value = state.signers.principalTitle || defaultSigners.principalTitle;
+  els.principalName.value = state.signers.principalName || "";
+  els.teamLeaderName.value = state.signers.teamLeaderName || "";
+}
+
 function updateCurrentTeacherMetadata() {
   const option = [...els.teacherSelect.options].find((item) => item.value === state.teacherId);
   if (option) option.textContent = teacherOptionLabel(state.profile);
@@ -471,6 +514,7 @@ function updateCurrentTeacherMetadata() {
 
 function refreshLiveOutputs() {
   syncProfileFromInputs();
+  syncSignerInputs();
   updateCurrentTeacherMetadata();
   renderSummary();
   renderPreview();
@@ -593,7 +637,7 @@ async function loginTeacher() {
   const securityCode = els.loginCode.value.trim();
   saveGoogleSheetUrl();
   if (!url) {
-    setSyncStatus("Chưa có Apps Script URL để đăng nhập.", "error");
+    setSyncStatus("Chưa có Apps Script URL để đăng nhập. Admin cần cấu hình URL Apps Script hoặc gửi URL để nhúng cố định vào app.", "error");
     return;
   }
   if (!email) {
@@ -624,7 +668,7 @@ async function requestLoginSecurityCode() {
   const email = els.loginEmail.value.trim();
   saveGoogleSheetUrl();
   if (!url) {
-    setSyncStatus("Chưa có Apps Script URL để gửi mã.", "error");
+    setSyncStatus("Chưa có Apps Script URL để gửi mật khẩu mới.", "error");
     return;
   }
   if (!email) {
@@ -866,6 +910,7 @@ function renderSummary() {
 
 function renderPreview() {
   const { rows, totals } = calculate();
+  const signers = state.signers || defaultSigners;
   const [year, mm] = state.month.split("-");
   const monthNumber = Number(mm);
   const lastDay = new Date(Number(year), monthNumber, 0);
@@ -1009,13 +1054,13 @@ function renderPreview() {
       <div class="signature-grid">
         <div>
           <strong>Duyệt Ban Giám hiệu</strong>
-          <strong>PHÓ HIỆU TRƯỞNG</strong>
-          <strong class="signature-name">Lê Văn Cường</strong>
+          <strong>${escapeHtml(signers.principalTitle)}</strong>
+          <strong class="signature-name">${escapeHtml(signers.principalName)}</strong>
         </div>
         <div>
           <strong>Xác nhận tổ trưởng</strong>
           <span>${escapeHtml(totalText)}</span>
-          <strong class="signature-name">Lê Thị Mỹ Phụng</strong>
+          <strong class="signature-name">${escapeHtml(signers.teamLeaderName)}</strong>
         </div>
         <div>
           <strong>Người dạy</strong>
@@ -1261,6 +1306,7 @@ function summaryWorksheetXml(teacherList, title) {
 
 function worksheetXml() {
   const { rows, totals } = calculate();
+  const signers = state.signers || defaultSigners;
   const [year, mm] = state.month.split("-");
   const monthNumber = Number(mm);
   const lastDay = new Date(Number(year), monthNumber, 0);
@@ -1402,10 +1448,10 @@ function worksheetXml() {
   set("A55", "   Duyệt Ban Giám hiệu", 2);
   set("F55", "Xác nhận tổ trưởng", 2);
   set("J55", "Người dạy", 2);
-  set("A56", "PHÓ HIỆU TRƯỞNG", 2);
+  set("A56", signers.principalTitle, 2);
   set("F56", totalText, 5);
-  set("A61", "Lê Văn Cường", 2);
-  set("F61", "Lê Thị Mỹ Phụng", 2);
+  set("A61", signers.principalName, 2);
+  set("F61", signers.teamLeaderName, 2);
   set("J61", state.profile.name, 2);
   set("A73", "Ghi chú :", 22);
   set("A74", "- GV phải kê khai đầy đủ các thông tin trong bảng kê, nếu có dạy thay ai hoặc dạy bù phải ghi bên cột đột xuất (cột 4) và ghi đầy đủ thông tin diễn giải (cột 2), Thời khóa biểu phải khoanh tròn tiết dạy thay hoặc dạy bù đó.", 23);
@@ -1718,6 +1764,8 @@ function init() {
     els.monthSelect.appendChild(option);
   });
   els.monthSelect.value = state.month;
+  state.signers = loadSignerSettings();
+  setSignerInputs();
   els.googleSheetUrl.value = localStorage.getItem(googleSheetUrlKey()) || DEFAULT_GOOGLE_SCRIPT_URL;
   const session = getLoginSession();
   if (session?.teacher && session?.securityCode) {
@@ -1747,6 +1795,10 @@ function init() {
     resetForSelection();
   });
   ["teacherName", "subject", "assignment", "rankCode", "salaryLevel", "salaryCoeff", "weeklyNorm"].forEach((key) => {
+    els[key].addEventListener("input", refreshLiveOutputs);
+    els[key].addEventListener("change", renderAll);
+  });
+  ["principalTitle", "principalName", "teamLeaderName"].forEach((key) => {
     els[key].addEventListener("input", refreshLiveOutputs);
     els[key].addEventListener("change", renderAll);
   });
