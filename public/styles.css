@@ -197,6 +197,10 @@ label {
 }
 
 .login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   width: 100%;
   min-height: 50px;
   margin-top: 10px;
@@ -316,6 +320,21 @@ button.is-loading {
   cursor: wait;
 }
 
+button.is-loading .button-spinner {
+  display: inline-block;
+}
+
+.button-spinner {
+  display: none;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border: 3px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
 button.is-loading::before {
   content: "";
   width: 16px;
@@ -324,6 +343,10 @@ button.is-loading::before {
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+
+.login-button.is-loading::before {
+  content: none;
 }
 
 button.secondary.is-loading::before {

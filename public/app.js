@@ -1876,16 +1876,25 @@ function init() {
   const loginBtn = document.querySelector("#loginBtn");
   loginBtn.addEventListener("click", async () => {
     if (loginBtn.disabled) return;
-    const originalText = loginBtn.textContent;
+    const loginLabel = loginBtn.querySelector(".button-label");
+    const originalText = loginLabel ? loginLabel.textContent : loginBtn.textContent;
     loginBtn.disabled = true;
     loginBtn.classList.add("is-loading");
-    loginBtn.textContent = "Đang đăng nhập...";
+    if (loginLabel) {
+      loginLabel.textContent = "Đang đăng nhập...";
+    } else {
+      loginBtn.textContent = "Đang đăng nhập...";
+    }
     try {
       await loginTeacher();
     } finally {
       loginBtn.disabled = false;
       loginBtn.classList.remove("is-loading");
-      loginBtn.textContent = originalText;
+      if (loginLabel) {
+        loginLabel.textContent = originalText;
+      } else {
+        loginBtn.textContent = originalText;
+      }
     }
   });
   document.querySelector("#forgotLoginCodeBtn").addEventListener("click", requestLoginSecurityCode);
