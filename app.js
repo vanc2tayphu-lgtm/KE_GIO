@@ -178,9 +178,6 @@ const els = {
   weekRows: document.querySelector("#weekRows"),
   weekHint: document.querySelector("#weekHint"),
   weekCountBadge: document.querySelector("#weekCountBadge"),
-  totalActual: document.querySelector("#totalActual"),
-  totalRemainingNorm: document.querySelector("#totalRemainingNorm"),
-  totalResult: document.querySelector("#totalResult"),
   printArea: document.querySelector("#printArea"),
   tabButtons: document.querySelectorAll(".tab-button"),
   tabPanels: document.querySelectorAll(".tab-panel")
@@ -539,7 +536,6 @@ function refreshLiveOutputs() {
   syncSignerInputs();
   setBrandTeacherName();
   updateCurrentTeacherMetadata();
-  renderSummary();
   renderPreview();
 }
 
@@ -930,13 +926,6 @@ function renderWeeks() {
   });
 }
 
-function renderSummary() {
-  const { totals } = calculate();
-  els.totalActual.textContent = formatNumber(totals.actual);
-  els.totalRemainingNorm.textContent = formatNumber(totals.remainingNorm);
-  els.totalResult.textContent = resultText(totals.diff);
-}
-
 function renderPreview() {
   const { rows, totals } = calculate();
   const signers = state.signers || defaultSigners;
@@ -1170,7 +1159,6 @@ function renderAll() {
   setBrandTeacherName();
   renderAllowances();
   renderWeeks();
-  renderSummary();
   renderPreview();
 }
 

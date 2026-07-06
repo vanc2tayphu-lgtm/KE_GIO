@@ -312,30 +312,24 @@ button.secondary {
   padding: 24px;
 }
 
-.summary-strip {
+.app-title-banner {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  place-items: center;
+  min-height: 104px;
   margin-bottom: 16px;
-}
-
-.summary-strip div {
-  background: var(--panel);
-  border: 1px solid var(--line);
+  padding: 22px 26px;
   border-radius: 8px;
-  padding: 16px;
+  background: #1f67d2;
+  color: #fff;
   box-shadow: var(--shadow);
+  text-align: center;
 }
 
-.summary-strip span {
-  display: block;
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 7px;
-}
-
-.summary-strip strong {
-  font-size: 24px;
+.app-title-banner h2 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.22;
+  font-weight: 800;
 }
 
 .view-tabs {
@@ -784,7 +778,6 @@ th {
     border-bottom: 1px solid var(--line);
   }
 
-  .summary-strip,
   .print-page {
     width: 100%;
     min-height: auto;
@@ -804,7 +797,7 @@ th {
   }
 
   .sidebar,
-  .summary-strip,
+  .app-title-banner,
   .card:first-of-type {
     display: none !important;
   }
