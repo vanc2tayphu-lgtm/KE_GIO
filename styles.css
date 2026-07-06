@@ -522,8 +522,8 @@ th {
 
 .mau-meta {
   display: grid;
-  grid-template-columns: 210px minmax(220px, 1fr) 64px minmax(210px, 1fr) 135px 48px;
-  gap: 12px 18px;
+  grid-template-columns: 170px minmax(190px, 1fr) 44px minmax(130px, 1fr) 126px 28px;
+  gap: 12px 10px;
   margin-bottom: 12px;
   font-size: 17px;
 }
