@@ -52,6 +52,9 @@ const defaultTeacherInfo = {
 
 const ADMIN_EMAIL = "phdungvt@gmail.com";
 const DEFAULT_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzheUfXYdNhJMrSRbx6wWIf3EpmBExbGlH2PRuDL3h6B7sW3vJm58VoXaDy3BY9twAkaA/exec";
+const LEGACY_GOOGLE_SCRIPT_URLS = [
+  "https://script.google.com/macros/s/AKfycbyx6Xm_lYkcHiOeHFSwbB765uxdR7EFZzze-bghJrJpaNlaBywkpCO2tkKB_CMtUzJ-YQ/exec"
+];
 const defaultSigners = {
   principalTitle: "PHÓ HIỆU TRƯỞNG",
   principalName: "Lê Văn Cường",
@@ -193,6 +196,7 @@ let state = {
   allowances: [],
   entries: []
 };
+let lastLeaderSummaryError = "";
 
 function slugifyVietnamese(value) {
   return String(value)
@@ -314,7 +318,7 @@ function saveCurrentRecord() {
 }
 
 function saveGoogleSheetUrl() {
-  localStorage.setItem(googleSheetUrlKey(), els.googleSheetUrl.value.trim());
+  localStorage.setItem(googleSheetUrlKey(), normalizedGoogleScriptUrl(els.googleSheetUrl.value));
 }
 
 function loadSignerSettings() {
@@ -330,7 +334,18 @@ function saveSignerSettings() {
 }
 
 function googleScriptUrl() {
-  return (els.googleSheetUrl.value.trim() || DEFAULT_GOOGLE_SCRIPT_URL).trim();
+  const normalized = normalizedGoogleScriptUrl(els.googleSheetUrl.value);
+  if (els.googleSheetUrl.value.trim() !== normalized) {
+    els.googleSheetUrl.value = normalized;
+    localStorage.setItem(googleSheetUrlKey(), normalized);
+  }
+  return normalized;
+}
+
+function normalizedGoogleScriptUrl(value) {
+  const url = String(value || "").trim();
+  if (!url || LEGACY_GOOGLE_SCRIPT_URLS.includes(url)) return DEFAULT_GOOGLE_SCRIPT_URL;
+  return url;
 }
 
 function isAdminEmail(email) {
@@ -471,19 +486,24 @@ async function syncMonthlySummaryToGoogleSheet() {
 }
 
 async function loadLeaderSummaryFromGoogleSheet() {
+  lastLeaderSummaryError = "";
   const url = googleScriptUrl();
   saveGoogleSheetUrl();
   if (!url) {
-    setSyncStatus("Chưa có Apps Script URL để tải tổng hợp lãnh đạo.", "error");
+    lastLeaderSummaryError = "Chưa có Apps Script URL để tải tổng hợp lãnh đạo.";
+    setSyncStatus(lastLeaderSummaryError, "error");
     return null;
   }
   const session = getLoginSession();
-  if (!session?.email || !session?.securityCode) {
-    setSyncStatus("Vui lòng đăng nhập bằng tài khoản admin để xuất tổng hợp lãnh đạo.", "error");
+  const sessionEmail = session?.email || session?.teacher?.email || "";
+  if (!sessionEmail || !session?.securityCode) {
+    lastLeaderSummaryError = "Vui lòng đăng nhập bằng tài khoản admin để xuất tổng hợp lãnh đạo.";
+    setSyncStatus(lastLeaderSummaryError, "error");
     return null;
   }
-  if (!isAdminEmail(session.email)) {
-    setSyncStatus("Chỉ tài khoản admin mới được xuất tổng hợp lãnh đạo.", "error");
+  if (!isAdminEmail(sessionEmail)) {
+    lastLeaderSummaryError = "Chỉ tài khoản admin mới được xuất tổng hợp lãnh đạo.";
+    setSyncStatus(lastLeaderSummaryError, "error");
     return null;
   }
 
@@ -491,12 +511,13 @@ async function loadLeaderSummaryFromGoogleSheet() {
   try {
     const result = await requestGoogleScript(url, {
       action: "leaderSummary",
-      email: session.email,
+      email: sessionEmail,
       teacherCode: session.teacherCode || "",
       securityCode: session.securityCode
     });
     if (!result.ok || !Array.isArray(result.teachers)) {
-      setSyncStatus(friendlyGoogleError(result.error) || "Không tải được tổng hợp lãnh đạo.", "error");
+      lastLeaderSummaryError = friendlyGoogleError(result.error) || "Không tải được tổng hợp lãnh đạo.";
+      setSyncStatus(lastLeaderSummaryError, "error");
       return null;
     }
     setSyncStatus(`Đã tải tổng hợp ${result.teachers.length} giáo viên từ Google Sheet.`, "success");
@@ -507,7 +528,8 @@ async function loadLeaderSummaryFromGoogleSheet() {
       monthly: teacher.monthly || {}
     }));
   } catch (error) {
-    setSyncStatus("Không tải được tổng hợp lãnh đạo. Kiểm tra lại Apps Script URL.", "error");
+    lastLeaderSummaryError = "Không tải được tổng hợp lãnh đạo. Kiểm tra lại Apps Script URL.";
+    setSyncStatus(lastLeaderSummaryError, "error");
     return null;
   }
 }
@@ -1244,7 +1266,7 @@ async function exportLeaderSummary() {
   saveCurrentRecord();
   const googleSheetTeachers = await loadLeaderSummaryFromGoogleSheet();
   if (!googleSheetTeachers) {
-    alert("Chưa tải được dữ liệu tổng hợp từ Google Sheet. Vui lòng kiểm tra Apps Script hoặc đăng nhập bằng tài khoản admin.");
+    alert(lastLeaderSummaryError || "Chưa tải được dữ liệu tổng hợp từ Google Sheet. Vui lòng kiểm tra Apps Script hoặc đăng nhập bằng tài khoản admin.");
     return;
   }
   const blob = await buildSummaryXlsxBlob(googleSheetTeachers, "TỔNG HỢP KÊ GIỜ GIÁO VIÊN");
@@ -1849,7 +1871,8 @@ function init() {
   els.monthSelect.value = state.month;
   state.signers = loadSignerSettings();
   setSignerInputs();
-  els.googleSheetUrl.value = localStorage.getItem(googleSheetUrlKey()) || DEFAULT_GOOGLE_SCRIPT_URL;
+  els.googleSheetUrl.value = normalizedGoogleScriptUrl(localStorage.getItem(googleSheetUrlKey()));
+  localStorage.setItem(googleSheetUrlKey(), els.googleSheetUrl.value);
   const session = getLoginSession();
   if (session?.teacher && session?.securityCode) {
     els.loginEmail.value = session.email || session.teacher.email || "";
