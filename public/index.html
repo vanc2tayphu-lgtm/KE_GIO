@@ -29,6 +29,7 @@
             <div>
               <h1>Kê giờ</h1>
               <p>THCS Tây Phú</p>
+              <strong id="brandTeacherName" class="brand-teacher-name"></strong>
             </div>
             <button id="logoutBtn" class="logout-button" type="button">Đăng xuất</button>
           </div>
@@ -115,7 +116,12 @@
             </div>
           </div>
 
-          <section class="card">
+          <div class="view-tabs" role="tablist" aria-label="Chọn chế độ xem">
+            <button id="entryTabBtn" class="tab-button active" type="button" data-tab="entry">Nhập tiết</button>
+            <button id="previewTabBtn" class="tab-button" type="button" data-tab="preview">Xem bảng kê</button>
+          </div>
+
+          <section id="entryTab" class="card tab-panel active" data-tab-panel="entry">
             <div class="section-heading">
               <div>
                 <h2>Nhập tiết theo tuần</h2>
@@ -143,7 +149,7 @@
             </div>
           </section>
 
-          <section class="card print-card" id="printArea">
+          <section class="card print-card tab-panel hidden" id="printArea" data-tab-panel="preview">
             <div class="print-header">
               <div>
                 <p id="unitName">UBND XÃ TÂY PHÚ</p>

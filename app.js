@@ -156,6 +156,7 @@ let teachers = teacherNames.map((name, index) => {
 
 const els = {
   loginOverlay: document.querySelector("#loginOverlay"),
+  brandTeacherName: document.querySelector("#brandTeacherName"),
   monthSelect: document.querySelector("#monthSelect"),
   teacherSelect: document.querySelector("#teacherSelect"),
   teacherName: document.querySelector("#teacherName"),
@@ -180,7 +181,9 @@ const els = {
   totalActual: document.querySelector("#totalActual"),
   totalRemainingNorm: document.querySelector("#totalRemainingNorm"),
   totalResult: document.querySelector("#totalResult"),
-  printArea: document.querySelector("#printArea")
+  printArea: document.querySelector("#printArea"),
+  tabButtons: document.querySelectorAll(".tab-button"),
+  tabPanels: document.querySelectorAll(".tab-panel")
 };
 
 let state = {
@@ -342,6 +345,23 @@ function setLoginOverlayVisible(visible) {
   els.loginOverlay.classList.toggle("hidden", !visible);
 }
 
+function setBrandTeacherName() {
+  els.brandTeacherName.textContent = state.profile.name || "";
+}
+
+function switchViewTab(tabName) {
+  els.tabButtons.forEach((button) => {
+    const active = button.dataset.tab === tabName;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  els.tabPanels.forEach((panel) => {
+    const active = panel.dataset.tabPanel === tabName;
+    panel.classList.toggle("hidden", !active);
+    panel.classList.toggle("active", active);
+  });
+}
+
 function logoutTeacher() {
   saveCurrentRecord();
   localStorage.removeItem(loginSessionKey());
@@ -377,6 +397,7 @@ function showLoggedOutTeacherSelect() {
   els.teacherSelect.disabled = true;
   setProfileInputs();
   setSignerInputs();
+  setBrandTeacherName();
 }
 
 function setSyncStatus(message, type = "") {
@@ -499,6 +520,7 @@ function setProfileInputs() {
   els.salaryLevel.value = state.profile.salaryLevel || "";
   els.salaryCoeff.value = state.profile.salaryCoeff || "";
   els.weeklyNorm.value = state.profile.weeklyNorm || 0;
+  setBrandTeacherName();
 }
 
 function setSignerInputs() {
@@ -515,6 +537,7 @@ function updateCurrentTeacherMetadata() {
 function refreshLiveOutputs() {
   syncProfileFromInputs();
   syncSignerInputs();
+  setBrandTeacherName();
   updateCurrentTeacherMetadata();
   renderSummary();
   renderPreview();
@@ -1136,6 +1159,8 @@ function scheduleTableHtml() {
 
 function renderAll() {
   syncProfileFromInputs();
+  syncSignerInputs();
+  setBrandTeacherName();
   renderAllowances();
   renderWeeks();
   renderSummary();
@@ -1810,6 +1835,9 @@ function init() {
     saveGoogleSheetUrl();
     setSyncStatus(els.googleSheetUrl.value.trim() ? "Đã cấu hình Google Sheet." : "Chưa cấu hình đồng bộ.");
   });
+  els.tabButtons.forEach((button) => {
+    button.addEventListener("click", () => switchViewTab(button.dataset.tab));
+  });
   document.querySelector("#saveBtn").addEventListener("click", async () => {
     saveCurrentRecord();
     const synced = await syncMonthlySummaryToGoogleSheet();
@@ -1817,6 +1845,7 @@ function init() {
   });
   document.querySelector("#printBtn").addEventListener("click", () => {
     saveCurrentRecord();
+    switchViewTab("preview");
     const originalTitle = document.title;
     const restoreTitle = () => {
       document.title = originalTitle;
