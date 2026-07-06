@@ -63,15 +63,15 @@ textarea {
 }
 
 .brand {
-  display: flex;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
 }
 
-.brand > div:nth-child(2) {
+.brand-main {
   min-width: 0;
-  flex: 1;
 }
 
 .brand-mark {
@@ -105,11 +105,12 @@ label {
 
 .brand-teacher-name {
   display: block;
-  margin-top: 4px;
+  grid-column: 2 / 4;
   color: #b42318;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   line-height: 1.18;
+  white-space: nowrap;
 }
 
 .logout-button {
