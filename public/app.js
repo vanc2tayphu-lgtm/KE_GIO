@@ -1069,7 +1069,7 @@ function renderPreview() {
     <div class="print-page page-two">
       <h3>Thời khóa biểu</h3>
       ${scheduleTableHtml()}
-      <p class="date-line">Thoại Sơn, ngày ${String(lastDay.getDate()).padStart(2, "0")} tháng ${String(monthNumber).padStart(2, "0")} năm ${year}</p>
+      <p class="date-line">Tây Phú, ngày ${String(lastDay.getDate()).padStart(2, "0")} tháng ${String(monthNumber).padStart(2, "0")} năm ${year}</p>
       <div class="signature-grid">
         <div>
           <strong>Duyệt Ban Giám hiệu</strong>
@@ -1465,7 +1465,7 @@ function worksheetXml() {
     set(`A${r}`, day, 20);
     set(`H${r}`, day, 20);
   });
-  set("J54", `Thoại Sơn, ngày ${String(lastDay.getDate()).padStart(2, "0")} tháng ${String(monthNumber).padStart(2, "0")} năm ${year}`, 21);
+  set("J54", `Tây Phú, ngày ${String(lastDay.getDate()).padStart(2, "0")} tháng ${String(monthNumber).padStart(2, "0")} năm ${year}`, 21);
   set("A55", "   Duyệt Ban Giám hiệu", 2);
   set("F55", "Xác nhận tổ trưởng", 2);
   set("J55", "Người dạy", 2);
