@@ -470,6 +470,48 @@ async function syncMonthlySummaryToGoogleSheet() {
   }
 }
 
+async function loadLeaderSummaryFromGoogleSheet() {
+  const url = googleScriptUrl();
+  saveGoogleSheetUrl();
+  if (!url) {
+    setSyncStatus("Chưa có Apps Script URL để tải tổng hợp lãnh đạo.", "error");
+    return null;
+  }
+  const session = getLoginSession();
+  if (!session?.email || !session?.securityCode) {
+    setSyncStatus("Vui lòng đăng nhập bằng tài khoản admin để xuất tổng hợp lãnh đạo.", "error");
+    return null;
+  }
+  if (!isAdminEmail(session.email)) {
+    setSyncStatus("Chỉ tài khoản admin mới được xuất tổng hợp lãnh đạo.", "error");
+    return null;
+  }
+
+  setSyncStatus("Đang tải tổng hợp lãnh đạo từ Google Sheet...");
+  try {
+    const result = await requestGoogleScript(url, {
+      action: "leaderSummary",
+      email: session.email,
+      teacherCode: session.teacherCode || "",
+      securityCode: session.securityCode
+    });
+    if (!result.ok || !Array.isArray(result.teachers)) {
+      setSyncStatus(friendlyGoogleError(result.error) || "Không tải được tổng hợp lãnh đạo.", "error");
+      return null;
+    }
+    setSyncStatus(`Đã tải tổng hợp ${result.teachers.length} giáo viên từ Google Sheet.`, "success");
+    return result.teachers.map((teacher, index) => ({
+      id: teacher.id || `sheet-row-${index + 1}`,
+      name: teacher.name || "",
+      subject: teacher.subject || "",
+      monthly: teacher.monthly || {}
+    }));
+  } catch (error) {
+    setSyncStatus("Không tải được tổng hợp lãnh đạo. Kiểm tra lại Apps Script URL.", "error");
+    return null;
+  }
+}
+
 function requestGoogleScript(url, params) {
   return new Promise((resolve, reject) => {
     const callbackName = `keGioCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -1200,7 +1242,12 @@ async function exportTeacherSummary() {
 
 async function exportLeaderSummary() {
   saveCurrentRecord();
-  const blob = await buildSummaryXlsxBlob(teachersWithSavedRecords(), "TỔNG HỢP KÊ GIỜ GIÁO VIÊN");
+  const googleSheetTeachers = await loadLeaderSummaryFromGoogleSheet();
+  if (!googleSheetTeachers) {
+    alert("Chưa tải được dữ liệu tổng hợp từ Google Sheet. Vui lòng kiểm tra Apps Script hoặc đăng nhập bằng tài khoản admin.");
+    return;
+  }
+  const blob = await buildSummaryXlsxBlob(googleSheetTeachers, "TỔNG HỢP KÊ GIỜ GIÁO VIÊN");
   downloadBlob(blob, "tong-hop-ke-gio-lanh-dao.xlsx");
 }
 
@@ -1275,12 +1322,21 @@ function summaryWorksheetXml(teacherList, title) {
     set(`B${row}`, teacher.name || "", 25);
     set(`C${row}`, teacher.subject || "", 25);
     months.forEach((month, monthIndex) => {
-      const record = storedRecord(teacher.id, month);
-      const totals = record ? calculateRecord(record).totals : { actual: 0, diff: 0 };
+      const monthly = teacher.monthly?.[month];
+      const record = monthly ? null : storedRecord(teacher.id, month);
+      const totals = monthly
+        ? {
+            actual: numberValue(monthly.actual),
+            surplus: numberValue(monthly.surplus),
+            shortage: numberValue(monthly.shortage)
+          }
+        : record
+          ? calculateRecord(record).totals
+          : { actual: 0, diff: 0 };
       const col = 4 + monthIndex * 3;
       setN(`${colName(col)}${row}`, totals.actual || "", 8);
-      setN(`${colName(col + 1)}${row}`, Math.max(totals.diff, 0) || "", 8);
-      setN(`${colName(col + 2)}${row}`, Math.max(-totals.diff, 0) || "", 8);
+      setN(`${colName(col + 1)}${row}`, monthly ? totals.surplus || "" : Math.max(totals.diff, 0) || "", 8);
+      setN(`${colName(col + 2)}${row}`, monthly ? totals.shortage || "" : Math.max(-totals.diff, 0) || "", 8);
     });
   });
 

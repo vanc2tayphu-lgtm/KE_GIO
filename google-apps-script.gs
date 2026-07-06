@@ -95,8 +95,54 @@ function handleAction_(payload) {
   if (payload.action === "login") return loginTeacher_(payload);
   if (payload.action === "teachers") return teachersResponse_();
   if (payload.action === "resetCode") return resetSecurityCode_(payload);
+  if (payload.action === "leaderSummary") return leaderSummary_(payload);
   if (payload.action === "upsertMonthlySummary") return upsertMonthlySummary_(payload);
   throw new Error("Unsupported action");
+}
+
+function leaderSummary_(payload) {
+  validateAdmin_(payload);
+  const sheet = getSummarySheet_();
+  ensureSheetLayout_(sheet);
+  updateTotalsRow_(sheet);
+  styleDataRows_(sheet);
+
+  const lastTeacherRow = getLastTeacherRow_(sheet);
+  if (lastTeacherRow < DATA_START_ROW) {
+    return { ok: true, teachers: [] };
+  }
+
+  const values = sheet.getRange(DATA_START_ROW, 1, lastTeacherRow - HEADER_ROWS, VISIBLE_COLS).getValues();
+  const teachers = values
+    .filter((row) => row[1] && !isTotalLabel_(row[1]))
+    .map((row, index) => {
+      const monthly = {};
+      MONTHS.forEach((month, monthIndex) => {
+        const colOffset = FIRST_MONTH_COL - 1 + monthIndex * 3;
+        monthly[month] = {
+          actual: Number(row[colOffset] || 0),
+          surplus: Number(row[colOffset + 1] || 0),
+          shortage: Number(row[colOffset + 2] || 0)
+        };
+      });
+      return {
+        id: "sheet-row-" + (index + 1),
+        name: String(row[1] || "").trim(),
+        subject: String(row[2] || "").trim(),
+        monthly: monthly
+      };
+    });
+  return { ok: true, teachers: teachers };
+}
+
+function validateAdmin_(payload) {
+  const cleanEmail = String(payload.email || "").trim().toLowerCase();
+  const securityCode = String(payload.securityCode || "").trim();
+  if (cleanEmail !== ADMIN_EMAIL) throw new Error("Chỉ admin mới được xuất tổng hợp lãnh đạo.");
+  const admin = teacherRecords_().find((item) => item.email.toLowerCase() === cleanEmail);
+  if (!admin) throw new Error("Không tìm thấy tài khoản admin trong danh sách giáo viên.");
+  if (String(admin.securityCode) !== securityCode) throw new Error("Sai mật khẩu admin.");
+  return admin;
 }
 
 function upsertMonthlySummary_(payload) {
