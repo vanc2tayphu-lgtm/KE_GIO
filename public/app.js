@@ -1873,7 +1873,21 @@ function init() {
   document.querySelector("#exportBtn").addEventListener("click", exportExcel);
   document.querySelector("#teacherSummaryBtn").addEventListener("click", exportTeacherSummary);
   document.querySelector("#leaderSummaryBtn").addEventListener("click", exportLeaderSummary);
-  document.querySelector("#loginBtn").addEventListener("click", loginTeacher);
+  const loginBtn = document.querySelector("#loginBtn");
+  loginBtn.addEventListener("click", async () => {
+    if (loginBtn.disabled) return;
+    const originalText = loginBtn.textContent;
+    loginBtn.disabled = true;
+    loginBtn.classList.add("is-loading");
+    loginBtn.textContent = "Đang đăng nhập...";
+    try {
+      await loginTeacher();
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.classList.remove("is-loading");
+      loginBtn.textContent = originalText;
+    }
+  });
   document.querySelector("#forgotLoginCodeBtn").addEventListener("click", requestLoginSecurityCode);
   document.querySelector("#logoutBtn").addEventListener("click", logoutTeacher);
 }
