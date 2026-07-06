@@ -50,7 +50,7 @@ const defaultTeacherInfo = {
 };
 
 const ADMIN_EMAIL = "phdungvt@gmail.com";
-const DEFAULT_GOOGLE_SCRIPT_URL = "";
+const DEFAULT_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyx6Xm_lYkcHiOeHFSwbB765uxdR7EFZzze-bghJrJpaNlaBywkpCO2tkKB_CMtUzJ-YQ/exec";
 const defaultSigners = {
   principalTitle: "PHÓ HIỆU TRƯỞNG",
   principalName: "Lê Văn Cường",
