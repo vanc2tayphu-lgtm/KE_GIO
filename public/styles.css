@@ -525,43 +525,45 @@ th {
 
 .mau-meta {
   display: grid;
-  grid-template-columns: 170px minmax(190px, 1fr) 44px minmax(130px, 1fr) 126px 28px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 12px 10px;
   margin-bottom: 12px;
   font-size: 17px;
 }
 
 .meta-teacher-label {
-  grid-column: 1;
+  grid-column: 1 / 4;
 }
 
 .meta-teacher-name {
-  grid-column: 2;
-}
-
-.meta-subject-label {
-  grid-column: 3;
-}
-
-.meta-subject-name {
   grid-column: 4 / 7;
 }
 
+.meta-subject-label {
+  grid-column: 7 / 8;
+}
+
+.meta-subject-name {
+  grid-column: 8 / 13;
+}
+
 .meta-assignment-label {
-  grid-column: 1;
-}
-
-.meta-assignment-value {
-  grid-column: 2 / 5;
-}
-
-.meta-total-label {
-  grid-column: 5;
+  grid-column: 1 / 4;
   white-space: nowrap;
 }
 
+.meta-assignment-value {
+  grid-column: 4 / 8;
+}
+
+.meta-total-label {
+  grid-column: 8 / 12;
+  white-space: nowrap;
+  text-align: right;
+}
+
 .meta-total-value {
-  grid-column: 6;
+  grid-column: 12;
 }
 
 .mau-line {
