@@ -1,9 +1,9 @@
-const SHEET_NAME = "Tong hop ke gio";
+const SHEET_NAME = "Tong hop ke gio 2026-2027";
 const TEACHER_SHEET_NAME = "Danh sach giao vien";
 const ADMIN_EMAIL = "phdungvt@gmail.com";
 const MONTHS = [
-  "2025-09", "2025-10", "2025-11", "2025-12", "2026-01",
-  "2026-02", "2026-03", "2026-04", "2026-05"
+  "2026-09", "2026-10", "2026-11", "2026-12", "2027-01",
+  "2027-02", "2027-03", "2027-04", "2027-05"
 ];
 const TEACHER_HEADERS = ["Ma GV", "Ho ten GV", "Mon", "Email", "Ma bao mat"];
 const TEACHER_SEED_NAMES = [
