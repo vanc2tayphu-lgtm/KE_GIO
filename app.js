@@ -365,7 +365,12 @@ function setBrandTeacherName() {
 
 function loadSignerSettings() {
   try {
-    return { ...defaultSigners, ...(JSON.parse(localStorage.getItem(signerSettingsKey()) || "{}")) };
+    const loaded = { ...defaultSigners, ...(JSON.parse(localStorage.getItem(signerSettingsKey()) || "{}")) };
+    if (loaded.principalName === "Lê Văn Cường" || !loaded.principalName) {
+      loaded.principalName = "Võ Thanh Phong";
+      localStorage.setItem(signerSettingsKey(), JSON.stringify(loaded));
+    }
+    return loaded;
   } catch (error) {
     return { ...defaultSigners };
   }
@@ -609,7 +614,10 @@ function setProfileInputs() {
 
 function setSignerInputs() {
   els.principalTitle.value = state.signers.principalTitle || defaultSigners.principalTitle;
-  els.principalName.value = state.signers.principalName || "";
+  if (state.signers.principalName === "Lê Văn Cường" || !state.signers.principalName) {
+    state.signers.principalName = "Võ Thanh Phong";
+  }
+  els.principalName.value = state.signers.principalName;
   els.teamLeaderName.value = state.signers.teamLeaderName || "";
 }
 
