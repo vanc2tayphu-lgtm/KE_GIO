@@ -554,24 +554,22 @@ async function loadLeaderSummaryFromGoogleSheet() {
   }
 }
 
-function requestGoogleScript(url, params) {
-  return new Promise((resolve, reject) => {
-    const callbackName = `keGioCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    const script = document.createElement("script");
-    const query = new URLSearchParams({ ...params, callback: callbackName });
-    window[callbackName] = (data) => {
-      delete window[callbackName];
-      script.remove();
-      resolve(data || {});
-    };
-    script.onerror = () => {
-      delete window[callbackName];
-      script.remove();
-      reject(new Error("Google Script request failed"));
-    };
-    script.src = `${url}${url.includes("?") ? "&" : "?"}${query.toString()}`;
-    document.body.appendChild(script);
-  });
+async function requestGoogleScript(url, params) {
+  const query = new URLSearchParams(params);
+  const fullUrl = `${url}${url.includes("?") ? "&" : "?"}${query.toString()}`;
+  const response = await fetch(fullUrl, { redirect: "follow" });
+  if (!response.ok) {
+    throw new Error(`Google Script request failed: ${response.status}`);
+  }
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    // Handle JSONP-wrapped response if any
+    const match = text.match(/^[^(]*\(([\s\S]*)\)\s*;?\s*$/);
+    if (match) return JSON.parse(match[1]);
+    throw new Error("Invalid response from Google Script");
+  }
 }
 
 function syncProfileFromInputs() {
