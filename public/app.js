@@ -371,7 +371,6 @@ function switchViewTab(tabName) {
   els.tabPanels.forEach((panel) => {
     const active = panel.dataset.tabPanel === tabName;
     panel.classList.toggle("hidden", !active);
-    panel.classList.toggle("active", active);
   });
 }
 
