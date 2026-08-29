@@ -272,78 +272,6 @@ function defaultEntries() {
 }
 
 function loadCurrentRecord() {
-function formatShortDate(value) {
-  const d = dateOnly(value);
-  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function monthLabel(month) {
-  const [year, mm] = month.split("-");
-  return `tháng ${Number(mm)} năm ${year}`;
-}
-
-function storageKey() {
-  return recordStorageKey(state.teacherId, state.month);
-}
-
-function recordStorageKey(teacherId, month) {
-  return `ke-gio:${teacherId}:${month}`;
-}
-
-function googleSheetUrlKey() {
-  return "ke-gio:google-sheet-url";
-}
-
-function signerSettingsKey() {
-  return "ke-gio:signers";
-}
-
-function securityCodeKey(teacherCode) {
-  return `ke-gio:security-code:${teacherCode || state.teacherId}`;
-}
-
-function loginSessionKey() {
-  return "ke-gio:login-session";
-}
-
-function monthsFromWeeks() {
-  const months = new Set();
-  schoolWeeks.forEach((week) => {
-    const start = dateOnly(week.start);
-    const end = dateOnly(week.end);
-    const cursor = new Date(start);
-    cursor.setDate(1);
-    while (cursor <= end) {
-      months.add(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`);
-      cursor.setMonth(cursor.getMonth() + 1);
-    }
-  });
-  return [...months].sort();
-}
-
-function weeksForMonth(month) {
-  const [year, mm] = month.split("-").map(Number);
-  const monthStart = new Date(year, mm - 1, 1);
-  const monthEnd = new Date(year, mm, 0);
-  return schoolWeeks.filter((week) => dateOnly(week.start) <= monthEnd && dateOnly(week.end) >= monthStart);
-}
-
-function defaultEntries() {
-  return weeksForMonth(state.month).map((week) => ({
-    key: `${week.n || "holiday"}:${week.start}`,
-    n: week.n,
-    start: week.start,
-    end: week.end,
-    status: week.holiday ? "holiday" : "teaching",
-    content: week.holiday ? week.note : state.profile.assignment,
-    regular: week.holiday ? 0 : "",
-    extra: 0,
-    reduction: 0,
-    note: week.note || ""
-  }));
-}
-
-function loadCurrentRecord() {
   const saved = localStorage.getItem(storageKey());
   if (saved) {
     const savedState = JSON.parse(saved);
@@ -417,9 +345,6 @@ function googleScriptUrl() {
     localStorage.setItem(googleSheetUrlKey(), normalized);
   }
   return normalized;
-}
-
-  els.brandTeacherName.textContent = state.profile.name || "";
 }
 
 function switchViewTab(tabName) {
