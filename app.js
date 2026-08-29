@@ -1,3 +1,26 @@
+
+let currentSchoolWeeks = [...schoolWeeks];
+
+function getActiveSchoolWeeks() {
+  const selectedYear = (document.querySelector("#schoolYearSelect")?.value || localStorage.getItem("ke-gio:school-year") || "2026-2027").split("-")[0];
+  const startYear = Number(selectedYear) || 2026;
+  const diff = startYear - 2026;
+  if (diff === 0) return schoolWeeks;
+
+  return schoolWeeks.map((week) => {
+    const s = new Date(`${week.start}T00:00:00`);
+    s.setFullYear(s.getFullYear() + diff);
+    const e = new Date(`${week.end}T00:00:00`);
+    e.setFullYear(e.getFullYear() + diff);
+    const formatYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return {
+      ...week,
+      start: formatYMD(s),
+      end: formatYMD(e)
+    };
+  });
+}
+
 const schoolWeeks = [
   { n: 1, start: "2026-09-07", end: "2026-09-13", note: "Bắt đầu học kỳ I" },
   { n: 2, start: "2026-09-14", end: "2026-09-20", note: "" },
@@ -251,7 +274,7 @@ function loginSessionKey() {
 
 function monthsFromWeeks() {
   const months = new Set();
-  schoolWeeks.forEach((week) => {
+  getActiveSchoolWeeks().forEach((week) => {
     const start = dateOnly(week.start);
     const end = dateOnly(week.end);
     const cursor = new Date(start);
@@ -268,7 +291,7 @@ function weeksForMonth(month) {
   const [year, mm] = month.split("-").map(Number);
   const monthStart = new Date(year, mm - 1, 1);
   const monthEnd = new Date(year, mm, 0);
-  return schoolWeeks.filter((week) => dateOnly(week.start) <= monthEnd && dateOnly(week.end) >= monthStart);
+  return getActiveSchoolWeeks().filter((week) => dateOnly(week.start) <= monthEnd && dateOnly(week.end) >= monthStart);
 }
 
 function defaultEntries() {
@@ -2042,6 +2065,30 @@ function refreshElements() {
 }
 
 function init() {
+
+  const schoolYearSelect = document.querySelector("#schoolYearSelect");
+  const savedSchoolYear = localStorage.getItem("ke-gio:school-year") || "2026-2027";
+  if (schoolYearSelect) {
+    schoolYearSelect.value = savedSchoolYear;
+    schoolYearSelect.addEventListener("change", () => {
+      localStorage.setItem("ke-gio:school-year", schoolYearSelect.value);
+      const startYear = schoolYearSelect.value.split("-")[0];
+      state.month = `${startYear}-09`;
+      if (els.monthSelect) {
+        els.monthSelect.innerHTML = "";
+        monthsFromWeeks().forEach((month) => {
+          const option = document.createElement("option");
+          option.value = month;
+          option.textContent = monthLabel(month);
+          els.monthSelect.appendChild(option);
+        });
+        els.monthSelect.value = state.month;
+      }
+      loadCurrentRecord();
+      renderAll();
+    });
+  }
+
   refreshElements();
   monthsFromWeeks().forEach((month) => {
     const option = document.createElement("option");
