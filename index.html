@@ -4,210 +4,173 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Kê giờ giáo viên THCS Tây Phú</title>
-    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="loginOverlay" class="login-overlay">
-      <div class="login-panel">
-        <div class="login-badge-app">
-          <span class="brand-mark-login">KG</span>
-          <span>THCS Tây Phú</span>
+    <main class="app-shell">
+      <div id="loginOverlay" class="login-overlay">
+        <div class="login-panel">
+          <div class="login-heading">
+            <h2>Đăng nhập</h2>
+            <p>Vui lòng sử dụng tài khoản được cấp.</p>
+          </div>
+          <label>Mã giáo viên <input id="loginEmail" type="text" autocomplete="username" placeholder="Ví dụ: TP105 hoặc mã được cấp" /></label>
+          <label>Mật khẩu <input id="loginCode" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="6 chữ số" /></label>
+          <button id="loginBtn" class="login-button" type="button">
+            <span class="button-spinner" aria-hidden="true"></span>
+            <span class="button-label">Đăng nhập</span>
+          </button>
+          <button id="forgotLoginCodeBtn" class="link-button" type="button">Quên mật khẩu?</button>
+          <p id="syncStatus" class="sync-status">Chưa cấu hình đồng bộ.</p>
         </div>
-        <div class="login-heading">
-          <h2>Đăng nhập Kê Giờ</h2>
-          <p>Mỗi giáo viên đăng nhập bằng mã giáo viên và mật khẩu 6 số được cấp.</p>
-        </div>
-        <div class="login-fields">
-          <label>
-            Mã giáo viên
-            <input id="loginEmail" type="text" autocomplete="username" placeholder="Ví dụ: TP105 hoặc mã được cấp" />
-          </label>
-          <label>
-            Mật khẩu
-            <input id="loginCode" type="password" autocomplete="current-password" inputmode="numeric" maxlength="6" placeholder="Nhập mật khẩu 6 số" />
-          </label>
-        </div>
-        <button id="loginBtn" class="login-button" type="button">
-          <span class="button-spinner" aria-hidden="true"></span>
-          <span class="button-label">Đăng nhập</span>
-        </button>
-        <button id="forgotLoginCodeBtn" class="link-button" type="button">Quên mật khẩu?</button>
-        <p id="syncStatus" class="sync-status">Chưa cấu hình đồng bộ.</p>
       </div>
-    </div>
 
-    <div class="workspace">
-      <aside class="sidebar" aria-label="Thiết lập bảng kê">
-        <div class="brand">
-          <div class="brand-mark">KG</div>
-          <div class="brand-main">
-            <h1>Kê giờ</h1>
-            <p>THCS Tây Phú</p>
-          </div>
-          <div class="brand-actions">
-            <button id="openChangePasswordBtn" class="change-pass-btn" type="button">🔒 Đổi mật khẩu</button>
-            <button id="logoutBtn" class="logout-button" type="button">Đăng xuất</button>
-          </div>
-          <strong id="brandTeacherName" class="brand-teacher-name"></strong>
-        </div>
-
-        <div id="adminConfigPanel" class="panel admin-config-panel hidden">
-          <h2>Cấu hình admin</h2>
-          <label>
-            Apps Script Web App URL
-            <input id="googleSheetUrl" placeholder="https://script.google.com/macros/s/..." />
-          </label>
-        </div>
-
-        <div class="panel">
-          <h2>Tháng kê giờ</h2>
-          <label>
-            Chọn tháng
-            <select id="monthSelect"></select>
-          </label>
-          <select id="teacherSelect" hidden></select>
-        </div>
-
-        <div class="panel">
-          <h2>Thông tin giáo viên</h2>
-          <label>
-            Họ và tên
-            <input id="teacherName" autocomplete="name" />
-          </label>
-          <label>
-            Môn/phân môn
-            <input id="subject" />
-          </label>
-          <label>
-            Phân công lớp dạy
-            <textarea id="assignment" rows="2"></textarea>
-          </label>
-          <div class="two-cols">
-            <label>
-              Mã ngạch
-              <input id="rankCode" />
-            </label>
-            <label>
-              Bậc
-              <input id="salaryLevel" inputmode="numeric" />
-            </label>
-          </div>
-          <div class="two-cols">
-            <label>
-              Hệ số lương
-              <input id="salaryCoeff" inputmode="decimal" />
-            </label>
-            <label>
-              Phụ cấp CV
-              <input id="positionAllowance" inputmode="decimal" />
-            </label>
-          </div>
-          <label>
-            Định mức tiết/tuần
-            <input id="weeklyNorm" type="number" min="0" step="0.5" />
-          </label>
-        </div>
-
-        <div class="panel">
-          <h2>Chữ ký duyệt</h2>
-          <label>
-            Chức danh duyệt
-            <select id="principalTitle">
-              <option value="PHÓ HIỆU TRƯỞNG">PHÓ HIỆU TRƯỞNG</option>
-              <option value="HIỆU TRƯỞNG">HIỆU TRƯỞNG</option>
-            </select>
-          </label>
-          <label>
-            Tên người duyệt
-            <input id="principalName" />
-          </label>
-          <label>
-            Tên tổ trưởng
-            <input id="teamLeaderName" />
-          </label>
-        </div>
-
-        <div class="panel">
-          <h2>Giảm trừ định mức</h2>
-          <div id="allowanceList"></div>
-          <datalist id="allowanceDutyOptions">
-            <option value="Chủ nhiệm"></option>
-            <option value="Tổ trưởng"></option>
-            <option value="Tổ phó"></option>
-            <option value="Kiêm nhiệm khác"></option>
-          </datalist>
-          <button id="addAllowance" class="secondary" type="button">+ Thêm dòng kiêm nhiệm</button>
-        </div>
-
-        <div class="actions">
-          <button id="saveBtn" class="primary-btn" type="button">Lưu bảng kê tháng này</button>
-          <button id="printBtn" class="secondary" type="button">In / Xuất PDF</button>
-          <button id="exportBtn" class="secondary" type="button">Xuất Excel (.xlsx)</button>
-          <button id="teacherSummaryBtn" class="secondary" type="button">Xuất bảng tổng hợp cá nhân</button>
-          <button id="leaderSummaryBtn" class="secondary" type="button">Xuất tổng hợp lãnh đạo</button>
-        </div>
-      </aside>
-
-      <main class="content">
-        <div class="app-title-banner">
-          <h2>
-            <span>Ứng dụng quản lí kê giờ</span>
-            <span>Trường THCS Tây Phú, Thoại Sơn, An Giang</span>
-          </h2>
-        </div>
-
-        <div class="view-tabs" role="tablist" aria-label="Chế độ hiển thị">
-          <button id="entryTabBtn" class="tab-button active" type="button" role="tab" aria-selected="true" data-tab="entry">
-            Nhập tiết theo tuần
-          </button>
-          <button id="previewTabBtn" class="tab-button" type="button" role="tab" aria-selected="false" data-tab="preview">
-            Xem trước bảng kê A4
-          </button>
-        </div>
-
-        <section id="entryTab" class="card tab-panel" data-tab-panel="entry">
-          <div class="section-heading">
-            <div>
-              <h2>Bảng kê số tiết theo tuần</h2>
-              <p id="weekHint">Chọn tháng để app tự lấy tuần từ khung 35 tuần.</p>
+      <section class="workspace">
+        <aside class="sidebar" aria-label="Thiết lập bảng kê">
+          <div class="brand">
+            <div class="brand-mark">KG</div>
+            <div class="brand-main">
+              <h1>Kê giờ</h1>
+              <p>THCS Tây Phú</p>
             </div>
-            <span id="weekCountBadge" class="badge">0 dòng</span>
+            <button id="openChangePasswordBtn" class="secondary change-pass-btn" type="button">🔒 Đổi MK</button>
+            <button id="logoutBtn" class="logout-button" type="button">Đăng xuất</button>
+            <strong id="brandTeacherName" class="brand-teacher-name"></strong>
           </div>
 
-          <div class="table-wrap">
-            <table class="entry-table">
-              <thead>
-                <tr>
-                  <th>Tuần</th>
-                  <th>Thời gian</th>
-                  <th>Trạng thái</th>
-                  <th>Nội dung</th>
-                  <th>TX</th>
-                  <th>Đột xuất</th>
-                  <th>Giảm</th>
-                  <th>Kết quả</th>
-                  <th>Ghi chú</th>
-                </tr>
-              </thead>
-              <tbody id="weekRows"></tbody>
-            </table>
+          <div id="adminConfigPanel" class="panel admin-config-panel hidden">
+            <h2>Cấu hình admin</h2>
+            <label>Apps Script Web App URL <input id="googleSheetUrl" placeholder="https://script.google.com/macros/s/..." /></label>
           </div>
+
+          <div class="panel">
+            <h2>Tháng kê giờ</h2>
+            <label>
+              Chọn tháng
+              <select id="monthSelect"></select>
+            </label>
+            <select id="teacherSelect" hidden></select>
+          </div>
+
+          <div class="panel">
+            <h2>Thông tin giáo viên</h2>
+            <label>Họ tên <input id="teacherName" /></label>
+            <label>Môn/phân môn <input id="subject" /></label>
+            <label>Phân công lớp dạy <textarea id="assignment" rows="3"></textarea></label>
+            <div class="two-cols">
+              <label>Mã ngạch <input id="rankCode" /></label>
+              <label>Bậc <input id="salaryLevel" /></label>
+            </div>
+            <div class="two-cols">
+              <label>Hệ số <input id="salaryCoeff" /></label>
+              <label>Phụ cấp chức vụ <input id="positionAllowance" /></label>
+            </div>
+            <label>Định mức/tuần <input id="weeklyNorm" type="number" min="0" step="0.5" /></label>
+          </div>
+
+          <div class="panel">
+            <h2>Chữ ký</h2>
+            <label>
+              Chức danh duyệt
+              <select id="principalTitle">
+                <option value="PHÓ HIỆU TRƯỞNG">PHÓ HIỆU TRƯỞNG</option>
+                <option value="HIỆU TRƯỞNG">HIỆU TRƯỞNG</option>
+              </select>
+            </label>
+            <label>Tên người duyệt <input id="principalName" /></label>
+            <label>Tên tổ trưởng <input id="teamLeaderName" /></label>
+          </div>
+
+          <div class="panel">
+            <h2>Giảm định mức</h2>
+            <div id="allowanceList"></div>
+            <datalist id="allowanceDutyOptions">
+              <option value="Chủ nhiệm"></option>
+              <option value="Tổ trưởng"></option>
+              <option value="Tổ phó"></option>
+              <option value="Kiêm nhiệm khác"></option>
+            </datalist>
+            <button id="addAllowance" class="secondary" type="button">+ Thêm kiêm nhiệm</button>
+          </div>
+
+          <div class="actions">
+            <button id="saveBtn" type="button">Lưu bảng kê</button>
+            <button id="printBtn" class="secondary" type="button">In / PDF</button>
+            <button id="exportBtn" class="secondary" type="button">Xuất Excel</button>
+            <button id="teacherSummaryBtn" class="secondary" type="button">Tải thống kê giáo viên</button>
+            <button id="leaderSummaryBtn" class="secondary" type="button">Xuất tổng hợp lãnh đạo</button>
+          </div>
+        </aside>
+
+        <section class="content">
+          <div class="app-title-banner">
+            <h2>
+              <span>Ứng dụng quản lí kê giờ</span>
+              <span>Trường THCS Tây Phú, xã Tây Phú, tỉnh An Giang</span>
+            </h2>
+          </div>
+
+          <div class="view-tabs" role="tablist" aria-label="Chọn chế độ xem">
+            <button id="entryTabBtn" class="tab-button active" type="button" data-tab="entry">Nhập tiết</button>
+            <button id="previewTabBtn" class="tab-button" type="button" data-tab="preview">Xem bảng kê</button>
+          </div>
+
+          <section id="entryTab" class="card tab-panel active" data-tab-panel="entry">
+            <div class="section-heading">
+              <div>
+                <h2>Nhập tiết theo tuần</h2>
+                <p id="weekHint">Chọn tháng để app tự lấy tuần từ khung 35 tuần.</p>
+              </div>
+              <span id="weekCountBadge" class="badge">0 tuần</span>
+            </div>
+            <div class="table-wrap">
+              <table class="entry-table">
+                <thead>
+                  <tr>
+                    <th>Tuần</th>
+                    <th>Thời gian</th>
+                    <th>Trạng thái</th>
+                    <th>Nội dung/lớp dạy</th>
+                    <th>TX</th>
+                    <th>Đột xuất</th>
+                    <th>Giảm</th>
+                    <th>Thừa/thiếu</th>
+                    <th>Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody id="weekRows"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="card print-card tab-panel hidden" id="printArea" data-tab-panel="preview">
+            <div class="print-header">
+              <div>
+                <p id="unitName">UBND XÃ TÂY PHÚ</p>
+                <strong>TRƯỜNG THCS TÂY PHÚ</strong>
+              </div>
+              <div>
+                <strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong>
+                <p>Độc lập - Tự do - Hạnh phúc</p>
+              </div>
+            </div>
+            <h2 id="printTitle">BẢNG KÊ CHI TIẾT XÁC ĐỊNH SỐ GIỜ THỪA-THIẾU</h2>
+            <div class="print-meta" id="printMeta"></div>
+            <table class="print-table" id="previewTable"></table>
+            <div class="signature-row">
+              <div>Người lập bảng</div>
+              <div>Hiệu trưởng</div>
+            </div>
+          </section>
         </section>
-
-        <section class="card print-card tab-panel hidden" id="printArea" data-tab-panel="preview"></section>
-      </main>
-    </div>
-
-    <!-- Modal Đổi Mật Khẩu -->
-    <div id="changePasswordOverlay" class="modal-overlay hidden">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>Đổi mật khẩu đăng nhập</h3>
-          <button id="closeChangePasswordBtn" class="close-btn" type="button" aria-label="Đóng">×</button>
-        </div>
-        <div class="modal-body">
-          <p class="modal-desc">Mật khẩu mới phải gồm <strong>đúng 6 chữ số</strong>.</p>
+      </section>
+    
+      <div id="changePasswordOverlay" class="login-overlay hidden">
+        <div class="login-panel">
+          <div class="login-heading">
+            <h2>Đổi mật khẩu</h2>
+            <p>Mật khẩu mới phải gồm đúng 6 chữ số.</p>
+          </div>
           <label>Mật khẩu hiện tại
             <input id="currentPasswordInput" type="password" inputmode="numeric" maxlength="6" placeholder="Nhập 6 số hiện tại" />
           </label>
@@ -217,17 +180,14 @@
           <label>Xác nhận mật khẩu mới
             <input id="confirmPasswordInput" type="password" inputmode="numeric" maxlength="6" placeholder="Nhập lại 6 số mới" />
           </label>
-          <p id="changePasswordStatus" class="modal-status"></p>
-        </div>
-        <div class="modal-footer">
-          <button id="cancelChangePasswordBtn" class="secondary" type="button">Hủy</button>
-          <button id="submitChangePasswordBtn" class="primary-btn" type="button">
-            <span class="button-label">Lưu mật khẩu mới</span>
-          </button>
+          <p id="changePasswordStatus" class="sync-status"></p>
+          <div style="display: flex; gap: 8px;">
+            <button id="cancelChangePasswordBtn" class="secondary" type="button" style="flex: 1;">Hủy</button>
+            <button id="submitChangePasswordBtn" class="login-button" type="button" style="flex: 1;">Lưu</button>
+          </div>
         </div>
       </div>
-    </div>
-
+    </main>
     <script src="app.js"></script>
   </body>
 </html>
