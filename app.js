@@ -81,7 +81,7 @@ const LEGACY_GOOGLE_SCRIPT_URLS = [
 ];
 const defaultSigners = {
   principalTitle: "PHÓ HIỆU TRƯỞNG",
-  principalName: "Lê Văn Cường",
+  principalName: "Võ Thanh Phong",
   teamLeaderName: "Lê Thị Mỹ Phụng"
 };
 
