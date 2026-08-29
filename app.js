@@ -1872,7 +1872,7 @@ async function changePasswordHandler() {
   }
 
   const session = getLoginSession();
-  const loginIdentifier = session?.teacherCode || session?.email || state.profile.teacherCode || state.profile.email;
+  const loginIdentifier = session?.teacher?.email || session?.email || session?.teacher?.teacherCode || session?.teacherCode || state.profile?.email || state.profile?.teacherCode;
   if (!loginIdentifier) {
     showChangePasswordStatus("Chưa đăng nhập. Vui lòng đăng nhập lại.", "error");
     return;
