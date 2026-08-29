@@ -229,15 +229,7 @@ button.is-loading .button-spinner {
   min-height: 100vh;
 }
 
-.sidebar {
-  background: #ffffff;
-  border-right: 1.5px solid var(--line);
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
-}
+
 
 /* Sidebar Brand Header */
 .brand {
@@ -325,28 +317,7 @@ button.is-loading .button-spinner {
   background: #fee2e2;
 }
 
-.brand-teacher-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #fef2f2;
-  border: 1.5px solid #fca5a5;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-}
 
-.teacher-badge-label {
-  font-size: 12px;
-  color: #7f1d1d;
-  font-weight: 700;
-}
-
-.brand-teacher-name {
-  color: #b91c1c;
-  font-size: 16px;
-  font-weight: 800;
-  word-break: break-word;
-}
 
 /* Panels */
 .panel,
@@ -357,25 +328,13 @@ button.is-loading .button-spinner {
   box-shadow: var(--shadow);
 }
 
-.panel {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+
 
 .panel.hidden {
   display: none !important;
 }
 
-.panel h2 {
-  font-size: 13.5px;
-  margin: 0;
-  color: var(--accent-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 800;
-}
+
 
 .panel label {
   display: flex;
@@ -386,11 +345,7 @@ button.is-loading .button-spinner {
   font-weight: 700;
 }
 
-.two-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
+
 
 .actions {
   display: flex;
@@ -1095,4 +1050,106 @@ button.secondary:hover {
     box-shadow: none !important;
   }
   .print-page:last-child { page-break-after: auto; }
+}
+
+
+/* ==========================================================================
+   SIDEBAR & PANELS (MÀU TÍM ĐẬM ĐÀ, TƯƠNG PHẢN RÕ NÉT)
+   ========================================================================== */
+.sidebar {
+  background: #f1ecf9;
+  border-right: 2px solid #8b5cf6;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.panel {
+  background: #ffffff;
+  border: 2px solid #a78bfa;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(76, 29, 149, 0.08);
+}
+
+.panel h2 {
+  font-size: 14px;
+  margin: 0 0 2px;
+  color: #3b0764;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 800;
+  border-bottom: 2px solid #ede9fe;
+  padding-bottom: 6px;
+}
+
+.panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  color: #1e1b4b;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.panel input,
+.panel select,
+.panel textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1.5px solid #a78bfa;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e1b4b;
+  background: #ffffff;
+}
+
+.panel input:focus,
+.panel select:focus,
+.panel textarea:focus {
+  border-color: #6d28d9;
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.2);
+}
+
+/* Khắc phục triệt để lỗi tràn viền 2 cột */
+.two-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.two-cols label {
+  min-width: 0;
+  width: 100%;
+}
+
+.two-cols input {
+  min-width: 0;
+  width: 100%;
+}
+
+.brand-teacher-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fef2f2;
+  border: 2px solid #ef4444;
+  padding: 9px 12px;
+  border-radius: 8px;
+}
+
+.brand-teacher-name {
+  color: #b91c1c;
+  font-size: 16.5px;
+  font-weight: 800;
+  word-break: break-word;
 }
