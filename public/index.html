@@ -75,6 +75,7 @@
               <h1>Kê giờ</h1>
               <p>THCS Tây Phú</p>
             </div>
+            <button id="openChangePasswordBtn" class="secondary-btn change-pass-btn" type="button">🔒 Đổi mật khẩu</button>
             <button id="logoutBtn" class="logout-button" type="button">Đăng xuất</button>
             <strong id="brandTeacherName" class="brand-teacher-name"></strong>
           </div>
@@ -267,6 +268,14 @@
                   <small>Xem tổng hợp các tháng của bản thân</small>
                 </div>
               </button>
+              
+              <button id="mobileActionChangePassword" class="action-card-btn" type="button">
+                <div class="action-icon">🔒</div>
+                <div class="action-text">
+                  <strong>Đổi mật khẩu</strong>
+                  <small>Đổi mật khẩu bảo mật 6 số của bạn</small>
+                </div>
+              </button>
               <button id="mobileActionLeaderSummary" class="action-card-btn leader-btn" type="button">
                 <div class="action-icon">🏛️</div>
                 <div class="action-text">
@@ -317,6 +326,36 @@
           <span class="nav-label">Xuất file</span>
         </button>
       </nav>
+    
+      <!-- Modal Đổi Mật Khẩu -->
+      <div id="changePasswordOverlay" class="modal-overlay hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3>Đổi mật khẩu</h3>
+            <button id="closeChangePasswordBtn" class="close-btn" type="button" aria-label="Đóng">×</button>
+          </div>
+          <div class="modal-body">
+            <p class="modal-desc">Mật khẩu mới phải gồm <strong>đúng 6 chữ số</strong>.</p>
+            <label>Mật khẩu hiện tại
+              <input id="currentPasswordInput" type="password" inputmode="numeric" maxlength="6" placeholder="Nhập 6 số hiện tại" />
+            </label>
+            <label>Mật khẩu mới
+              <input id="newPasswordInput" type="password" inputmode="numeric" maxlength="6" placeholder="Nhập 6 số mới" />
+            </label>
+            <label>Xác nhận mật khẩu mới
+              <input id="confirmPasswordInput" type="password" inputmode="numeric" maxlength="6" placeholder="Nhập lại 6 số mới" />
+            </label>
+            <p id="changePasswordStatus" class="modal-status"></p>
+          </div>
+          <div class="modal-footer">
+            <button id="cancelChangePasswordBtn" class="secondary-btn" type="button">Hủy</button>
+            <button id="submitChangePasswordBtn" class="primary-btn" type="button">
+              <span class="button-label">Lưu mật khẩu mới</span>
+            </button>
+          </div>
+        </div>
+      </div>
+  
     </main>
     <script src="app.js"></script>
   </body>

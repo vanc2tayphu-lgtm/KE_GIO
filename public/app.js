@@ -1861,6 +1861,110 @@ function escapeAttr(value) {
   return escapeHtml(value);
 }
 
+
+async function changePasswordHandler() {
+  const url = googleScriptUrl();
+  saveGoogleSheetUrl();
+  if (!url) {
+    showChangePasswordStatus("Chưa có Apps Script URL.", "error");
+    return;
+  }
+
+  const session = getLoginSession();
+  const loginIdentifier = session?.teacherCode || session?.email || state.profile.teacherCode || state.profile.email;
+  if (!loginIdentifier) {
+    showChangePasswordStatus("Chưa đăng nhập. Vui lòng đăng nhập lại.", "error");
+    return;
+  }
+
+  const currentPassword = document.querySelector("#currentPasswordInput")?.value.trim();
+  const newPassword = document.querySelector("#newPasswordInput")?.value.trim();
+  const confirmPassword = document.querySelector("#confirmPasswordInput")?.value.trim();
+
+  if (!currentPassword) {
+    showChangePasswordStatus("Vui lòng nhập mật khẩu hiện tại.", "error");
+    return;
+  }
+  if (!/^\d{6}$/.test(newPassword)) {
+    showChangePasswordStatus("Mật khẩu mới phải gồm đúng 6 chữ số.", "error");
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    showChangePasswordStatus("Mật khẩu xác nhận không khớp.", "error");
+    return;
+  }
+  if (currentPassword === newPassword) {
+    showChangePasswordStatus("Mật khẩu mới không được trùng mật khẩu cũ.", "error");
+    return;
+  }
+
+  const submitBtn = document.querySelector("#submitChangePasswordBtn");
+  const originalLabel = submitBtn ? submitBtn.textContent : "Lưu";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Đang đổi...";
+  }
+
+  showChangePasswordStatus("Đang gửi yêu cầu đổi mật khẩu...", "");
+
+  try {
+    const result = await requestGoogleScript(url, {
+      action: "changePassword",
+      email: loginIdentifier,
+      currentPassword,
+      newPassword
+    });
+
+    if (result.ok) {
+      // Cập nhật lại session lưu mật khẩu mới
+      if (session) {
+        session.securityCode = newPassword;
+        saveLoginSession(session);
+      }
+      showChangePasswordStatus("Đổi mật khẩu thành công!", "success");
+      setTimeout(() => {
+        closeChangePasswordModal();
+        alert("Đã đổi mật khẩu thành công! Mật khẩu mới của bạn là: " + newPassword);
+      }, 700);
+    } else {
+      showChangePasswordStatus(friendlyGoogleError(result.error) || "Không đổi được mật khẩu.", "error");
+    }
+  } catch (err) {
+    showChangePasswordStatus("Không kết nối được Google Sheet. Kiểm tra lại mạng.", "error");
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+    }
+  }
+}
+
+function showChangePasswordStatus(msg, type) {
+  const statusEl = document.querySelector("#changePasswordStatus");
+  if (!statusEl) return;
+  statusEl.textContent = msg;
+  statusEl.className = "modal-status " + (type === "error" ? "show-error" : type === "success" ? "show-success" : "");
+}
+
+function openChangePasswordModal() {
+  const overlay = document.querySelector("#changePasswordOverlay");
+  if (!overlay) return;
+  document.querySelector("#currentPasswordInput").value = "";
+  document.querySelector("#newPasswordInput").value = "";
+  document.querySelector("#confirmPasswordInput").value = "";
+  const statusEl = document.querySelector("#changePasswordStatus");
+  if (statusEl) {
+    statusEl.textContent = "";
+    statusEl.className = "modal-status";
+  }
+  overlay.classList.remove("hidden");
+}
+
+function closeChangePasswordModal() {
+  const overlay = document.querySelector("#changePasswordOverlay");
+  if (overlay) overlay.classList.add("hidden");
+}
+
 function init() {
   monthsFromWeeks().forEach((month) => {
     const option = document.createElement("option");

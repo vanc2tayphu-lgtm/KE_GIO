@@ -121,9 +121,41 @@ function handleAction_(payload) {
   if (payload.action === "login") return loginTeacher_(payload);
   if (payload.action === "teachers") return teachersResponse_();
   if (payload.action === "resetCode") return resetSecurityCode_(payload);
+  if (payload.action === "changePassword") return changePassword_(payload);
   if (payload.action === "leaderSummary") return leaderSummary_(payload);
   if (payload.action === "upsertMonthlySummary") return upsertMonthlySummary_(payload);
   throw new Error("Unsupported action");
+}
+
+
+function changePassword_(payload) {
+  const cleanLogin = String(payload.email || payload.loginCode || payload.teacherCode || "").trim().toLowerCase();
+  const currentPassword = String(payload.currentPassword || payload.oldPassword || payload.securityCode || "").trim();
+  const newPassword = String(payload.newPassword || "").trim();
+
+  if (!cleanLogin) throw new Error("Vui lòng cung cấp mã giáo viên.");
+  if (!currentPassword) throw new Error("Vui lòng nhập mật khẩu hiện tại.");
+  if (!/^\d{6}$/.test(newPassword)) throw new Error("Mật khẩu mới phải gồm đúng 6 chữ số.");
+  if (currentPassword === newPassword) throw new Error("Mật khẩu mới không được trùng với mật khẩu cũ.");
+
+  const teachers = teacherRecords_();
+  const teacher = teachers.find((item) => {
+    const code = String(item.teacherCode || "").trim().toLowerCase();
+    const login = String(item.email || "").trim().toLowerCase();
+    return login === cleanLogin || code === cleanLogin || slugify_(item.name) === slugify_(cleanLogin);
+  });
+
+  if (!teacher) throw new Error("Không tìm thấy tài khoản giáo viên.");
+  if (String(teacher.securityCode) !== currentPassword) {
+    throw new Error("Mật khẩu hiện tại không chính xác.");
+  }
+
+  getTeacherSheet_().getRange(teacher.row, 5).setValue(newPassword);
+
+  return {
+    ok: true,
+    message: "Đổi mật khẩu thành công!"
+  };
 }
 
 function leaderSummary_(payload) {
