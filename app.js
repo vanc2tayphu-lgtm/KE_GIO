@@ -2010,7 +2010,39 @@ function closeChangePasswordModal() {
   if (overlay) overlay.classList.add("hidden");
 }
 
+
+function refreshElements() {
+  els.loginOverlay = document.querySelector("#loginOverlay");
+  els.brandTeacherName = document.querySelector("#brandTeacherName");
+  els.monthSelect = document.querySelector("#monthSelect");
+  els.teacherSelect = document.querySelector("#teacherSelect");
+  els.teacherName = document.querySelector("#teacherName");
+  els.subject = document.querySelector("#subject");
+  els.assignment = document.querySelector("#assignment");
+  els.rankCode = document.querySelector("#rankCode");
+  els.salaryLevel = document.querySelector("#salaryLevel");
+  els.salaryCoeff = document.querySelector("#salaryCoeff");
+  els.positionAllowance = document.querySelector("#positionAllowance");
+  els.weeklyNorm = document.querySelector("#weeklyNorm");
+  els.principalTitle = document.querySelector("#principalTitle");
+  els.principalName = document.querySelector("#principalName");
+  els.teamLeaderName = document.querySelector("#teamLeaderName");
+  els.googleSheetUrl = document.querySelector("#googleSheetUrl");
+  els.adminConfigPanel = document.querySelector("#adminConfigPanel");
+  els.loginEmail = document.querySelector("#loginEmail");
+  els.loginCode = document.querySelector("#loginCode");
+  els.syncStatus = document.querySelector("#syncStatus");
+  els.allowanceList = document.querySelector("#allowanceList");
+  els.weekRows = document.querySelector("#weekRows");
+  els.weekHint = document.querySelector("#weekHint");
+  els.weekCountBadge = document.querySelector("#weekCountBadge");
+  els.printArea = document.querySelector("#printArea");
+  els.tabButtons = document.querySelectorAll(".tab-button");
+  els.tabPanels = document.querySelectorAll(".tab-panel");
+}
+
 function init() {
+  refreshElements();
   monthsFromWeeks().forEach((month) => {
     const option = document.createElement("option");
     option.value = month;
