@@ -2,20 +2,39 @@
 <html lang="vi">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#1f7a62" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Kê Giờ" />
+    <meta name="description" content="Ứng dụng kê giờ giảng dạy tự động THCS Tây Phú" />
     <title>Kê giờ giáo viên THCS Tây Phú</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app-shell">
+      <!-- Màn hình Đăng nhập -->
       <div id="loginOverlay" class="login-overlay">
         <div class="login-panel">
-          <div class="login-heading">
-            <h2>Đăng nhập</h2>
-            <p>Vui lòng sử dụng tài khoản được cấp.</p>
+          <div class="login-badge-app">
+            <div class="brand-mark-login">KG</div>
+            <div class="school-tag">THCS TÂY PHÚ</div>
           </div>
-          <label>Mã giáo viên <input id="loginEmail" type="text" autocomplete="username" placeholder="Ví dụ: TP105 hoặc mã được cấp" /></label>
-          <label>Mật khẩu <input id="loginCode" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="6 chữ số" /></label>
+          <div class="login-heading">
+            <h2>Đăng nhập Kê Giờ</h2>
+            <p>Vui lòng nhập mã giáo viên và mật khẩu được cấp.</p>
+          </div>
+          <div class="login-fields">
+            <label>Mã giáo viên 
+              <input id="loginEmail" type="text" autocomplete="username" autocapitalize="characters" placeholder="Ví dụ: TP105 hoặc mã được cấp" />
+            </label>
+            <label>Mật khẩu 
+              <input id="loginCode" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="6 chữ số bảo mật" />
+            </label>
+          </div>
           <button id="loginBtn" class="login-button" type="button">
             <span class="button-spinner" aria-hidden="true"></span>
             <span class="button-label">Đăng nhập</span>
@@ -25,8 +44,31 @@
         </div>
       </div>
 
+      <!-- Mobile Top Bar (Chỉ hiển thị trên Mobile/Tablet) -->
+      <header class="mobile-top-bar">
+        <div class="mobile-top-left">
+          <div class="mobile-brand-mark">KG</div>
+          <div class="mobile-brand-info">
+            <span class="mobile-school-name">THCS Tây Phú</span>
+            <strong id="mobileTeacherName" class="mobile-teacher-name">Chưa đăng nhập</strong>
+          </div>
+        </div>
+        <div class="mobile-top-right">
+          <select id="mobileMonthSelect" class="mobile-month-picker" aria-label="Chọn tháng kê giờ"></select>
+          <button id="mobileLogoutBtn" class="mobile-icon-btn" type="button" title="Đăng xuất" aria-label="Đăng xuất">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Không gian làm việc chính -->
       <section class="workspace">
-        <aside class="sidebar" aria-label="Thiết lập bảng kê">
+        <!-- Sidebar điều khiển (Desktop hoặc Tab Hồ sơ trên mobile) -->
+        <aside class="sidebar tab-panel" id="sidebarPanel" data-tab-panel="profile" aria-label="Thiết lập bảng kê">
           <div class="brand">
             <div class="brand-mark">KG</div>
             <div class="brand-main">
@@ -42,7 +84,7 @@
             <label>Apps Script Web App URL <input id="googleSheetUrl" placeholder="https://script.google.com/macros/s/..." /></label>
           </div>
 
-          <div class="panel">
+          <div class="panel desktop-only-panel">
             <h2>Tháng kê giờ</h2>
             <label>
               Chọn tháng
@@ -53,22 +95,22 @@
 
           <div class="panel">
             <h2>Thông tin giáo viên</h2>
-            <label>Họ tên <input id="teacherName" /></label>
+            <label>Họ tên <input id="teacherName" autocomplete="name" /></label>
             <label>Môn/phân môn <input id="subject" /></label>
-            <label>Phân công lớp dạy <textarea id="assignment" rows="3"></textarea></label>
+            <label>Phân công lớp dạy <textarea id="assignment" rows="2"></textarea></label>
             <div class="two-cols">
               <label>Mã ngạch <input id="rankCode" /></label>
-              <label>Bậc <input id="salaryLevel" /></label>
+              <label>Bậc <input id="salaryLevel" inputmode="numeric" /></label>
             </div>
             <div class="two-cols">
-              <label>Hệ số <input id="salaryCoeff" /></label>
-              <label>Phụ cấp chức vụ <input id="positionAllowance" /></label>
+              <label>Hệ số <input id="salaryCoeff" inputmode="decimal" /></label>
+              <label>Phụ cấp CV <input id="positionAllowance" inputmode="decimal" /></label>
             </div>
-            <label>Định mức/tuần <input id="weeklyNorm" type="number" min="0" step="0.5" /></label>
+            <label>Định mức tiết/tuần <input id="weeklyNorm" type="number" inputmode="decimal" min="0" step="0.5" /></label>
           </div>
 
           <div class="panel">
-            <h2>Chữ ký</h2>
+            <h2>Chữ ký duyệt</h2>
             <label>
               Chức danh duyệt
               <select id="principalTitle">
@@ -81,7 +123,7 @@
           </div>
 
           <div class="panel">
-            <h2>Giảm định mức</h2>
+            <h2>Giảm trừ định mức</h2>
             <div id="allowanceList"></div>
             <datalist id="allowanceDutyOptions">
               <option value="Chủ nhiệm"></option>
@@ -92,37 +134,52 @@
             <button id="addAllowance" class="secondary" type="button">+ Thêm kiêm nhiệm</button>
           </div>
 
-          <div class="actions">
-            <button id="saveBtn" type="button">Lưu bảng kê</button>
+          <div class="actions desktop-actions">
+            <button id="saveBtn" class="primary-btn" type="button">Lưu bảng kê</button>
             <button id="printBtn" class="secondary" type="button">In / PDF</button>
             <button id="exportBtn" class="secondary" type="button">Xuất Excel</button>
-            <button id="teacherSummaryBtn" class="secondary" type="button">Tải thống kê giáo viên</button>
+            <button id="teacherSummaryBtn" class="secondary" type="button">Tải thống kê cá nhân</button>
             <button id="leaderSummaryBtn" class="secondary" type="button">Xuất tổng hợp lãnh đạo</button>
           </div>
         </aside>
 
+        <!-- Khu vực nội dung chính -->
         <section class="content">
           <div class="app-title-banner">
             <h2>
               <span>Ứng dụng quản lí kê giờ</span>
-              <span>Trường THCS Tây Phú, xã Tây Phú, tỉnh An Giang</span>
+              <span>Trường THCS Tây Phú, Thoại Sơn, An Giang</span>
             </h2>
           </div>
 
-          <div class="view-tabs" role="tablist" aria-label="Chọn chế độ xem">
-            <button id="entryTabBtn" class="tab-button active" type="button" data-tab="entry">Nhập tiết</button>
-            <button id="previewTabBtn" class="tab-button" type="button" data-tab="preview">Xem bảng kê</button>
+          <!-- Desktop Tab Header (Ẩn trên mobile) -->
+          <div class="view-tabs desktop-tabs" role="tablist" aria-label="Chọn chế độ xem">
+            <button id="entryTabBtn" class="tab-button active" type="button" data-tab="entry">Nhập tiết theo tuần</button>
+            <button id="previewTabBtn" class="tab-button" type="button" data-tab="preview">Xem trước bảng kê A4</button>
           </div>
 
+          <!-- Tab 1: Kê giờ (Nhập tiết) -->
           <section id="entryTab" class="card tab-panel active" data-tab-panel="entry">
             <div class="section-heading">
               <div>
-                <h2>Nhập tiết theo tuần</h2>
+                <h2>Bảng kê số tiết theo tuần</h2>
                 <p id="weekHint">Chọn tháng để app tự lấy tuần từ khung 35 tuần.</p>
               </div>
-              <span id="weekCountBadge" class="badge">0 tuần</span>
+              <div class="heading-controls">
+                <span id="weekCountBadge" class="badge">0 tuần</span>
+                <!-- Mobile View Mode Switcher -->
+                <div class="mobile-view-toggle">
+                  <button id="viewModeCardBtn" class="toggle-btn active" type="button" title="Dạng thẻ">Dạng Thẻ</button>
+                  <button id="viewModeTableBtn" class="toggle-btn" type="button" title="Dạng bảng">Dạng Bảng</button>
+                </div>
+              </div>
             </div>
-            <div class="table-wrap">
+
+            <!-- Chế độ 1: Dạng thẻ cảm ứng trên Mobile (Mặc định cho Mobile) -->
+            <div id="mobileWeekCards" class="mobile-cards-container"></div>
+
+            <!-- Chế độ 2: Dạng bảng cuộn ngang (Desktop & Mobile Table View) -->
+            <div class="table-wrap" id="entryTableWrap">
               <table class="entry-table">
                 <thead>
                   <tr>
@@ -140,8 +197,17 @@
                 <tbody id="weekRows"></tbody>
               </table>
             </div>
+
+            <!-- Mobile Quick Actions Floating Bar -->
+            <div class="mobile-quick-actions">
+              <button id="mobileSaveBtn" class="mobile-floating-save" type="button">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                <span>Lưu bảng kê tháng này</span>
+              </button>
+            </div>
           </section>
 
+          <!-- Tab 2: Xem trước bảng in A4 -->
           <section class="card print-card tab-panel hidden" id="printArea" data-tab-panel="preview">
             <div class="print-header">
               <div>
@@ -155,14 +221,102 @@
             </div>
             <h2 id="printTitle">BẢNG KÊ CHI TIẾT XÁC ĐỊNH SỐ GIỜ THỪA-THIẾU</h2>
             <div class="print-meta" id="printMeta"></div>
-            <table class="print-table" id="previewTable"></table>
+            <div class="print-table-scroll">
+              <table class="print-table" id="previewTable"></table>
+            </div>
             <div class="signature-row">
               <div>Người lập bảng</div>
               <div>Hiệu trưởng</div>
             </div>
           </section>
+
+          <!-- Tab 4 (Mobile Tab): Lưu & Xuất dữ liệu -->
+          <section id="mobileActionsTab" class="card tab-panel hidden" data-tab-panel="actions">
+            <div class="section-heading">
+              <div>
+                <h2>Lưu & Xuất báo cáo</h2>
+                <p>Chọn thao tác bạn muốn thực hiện.</p>
+              </div>
+            </div>
+            <div class="mobile-actions-grid">
+              <button id="mobileActionSave" class="action-card-btn primary-action" type="button">
+                <div class="action-icon">💾</div>
+                <div class="action-text">
+                  <strong>Lưu lên Google Sheet</strong>
+                  <small>Đồng bộ dữ liệu kê giờ tháng này</small>
+                </div>
+              </button>
+              <button id="mobileActionExcel" class="action-card-btn" type="button">
+                <div class="action-icon">📊</div>
+                <div class="action-text">
+                  <strong>Xuất file Excel (.xlsx)</strong>
+                  <small>Tải bảng tính Excel chi tiết</small>
+                </div>
+              </button>
+              <button id="mobileActionPdf" class="action-card-btn" type="button">
+                <div class="action-icon">🖨️</div>
+                <div class="action-text">
+                  <strong>In / Xuất PDF</strong>
+                  <small>Mở trang in chuẩn văn bản A4</small>
+                </div>
+              </button>
+              <button id="mobileActionPersonalSummary" class="action-card-btn" type="button">
+                <div class="action-icon">📑</div>
+                <div class="action-text">
+                  <strong>Tải thống kê cá nhân</strong>
+                  <small>Xem tổng hợp các tháng của bản thân</small>
+                </div>
+              </button>
+              <button id="mobileActionLeaderSummary" class="action-card-btn leader-btn" type="button">
+                <div class="action-icon">🏛️</div>
+                <div class="action-text">
+                  <strong>Xuất tổng hợp lãnh đạo</strong>
+                  <small>Dành cho Admin / Ban giám hiệu</small>
+                </div>
+              </button>
+            </div>
+          </section>
         </section>
       </section>
+
+      <!-- Bottom Navigation Bar (Dành riêng cho Mobile & Tablet) -->
+      <nav class="mobile-bottom-nav" aria-label="Điều hướng chính">
+        <button class="nav-item active" type="button" data-tab="entry">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          <span class="nav-label">Kê giờ</span>
+        </button>
+
+        <button class="nav-item" type="button" data-tab="preview">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span class="nav-label">Xem in</span>
+        </button>
+
+        <button class="nav-item" type="button" data-tab="profile">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="nav-label">Hồ sơ</span>
+        </button>
+
+        <button class="nav-item" type="button" data-tab="actions">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span class="nav-label">Xuất file</span>
+        </button>
+      </nav>
     </main>
     <script src="app.js"></script>
   </body>

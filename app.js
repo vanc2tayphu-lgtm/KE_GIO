@@ -154,7 +154,9 @@ let teachers = rawTeacherSeed.map((item) => {
 const els = {
   loginOverlay: document.querySelector("#loginOverlay"),
   brandTeacherName: document.querySelector("#brandTeacherName"),
+  mobileTeacherName: document.querySelector("#mobileTeacherName"),
   monthSelect: document.querySelector("#monthSelect"),
+  mobileMonthSelect: document.querySelector("#mobileMonthSelect"),
   teacherSelect: document.querySelector("#teacherSelect"),
   teacherName: document.querySelector("#teacherName"),
   subject: document.querySelector("#subject"),
@@ -174,11 +176,23 @@ const els = {
   syncStatus: document.querySelector("#syncStatus"),
   allowanceList: document.querySelector("#allowanceList"),
   weekRows: document.querySelector("#weekRows"),
+  mobileWeekCards: document.querySelector("#mobileWeekCards"),
+  entryTableWrap: document.querySelector("#entryTableWrap"),
+  viewModeCardBtn: document.querySelector("#viewModeCardBtn"),
+  viewModeTableBtn: document.querySelector("#viewModeTableBtn"),
   weekHint: document.querySelector("#weekHint"),
   weekCountBadge: document.querySelector("#weekCountBadge"),
   printArea: document.querySelector("#printArea"),
   tabButtons: document.querySelectorAll(".tab-button"),
-  tabPanels: document.querySelectorAll(".tab-panel")
+  tabPanels: document.querySelectorAll(".tab-panel"),
+  mobileBottomNavItems: document.querySelectorAll(".mobile-bottom-nav .nav-item"),
+  mobileLogoutBtn: document.querySelector("#mobileLogoutBtn"),
+  mobileSaveBtn: document.querySelector("#mobileSaveBtn"),
+  mobileActionSave: document.querySelector("#mobileActionSave"),
+  mobileActionExcel: document.querySelector("#mobileActionExcel"),
+  mobileActionPdf: document.querySelector("#mobileActionPdf"),
+  mobileActionPersonalSummary: document.querySelector("#mobileActionPersonalSummary"),
+  mobileActionLeaderSummary: document.querySelector("#mobileActionLeaderSummary")
 };
 
 let state = {
