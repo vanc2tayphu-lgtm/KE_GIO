@@ -6,45 +6,71 @@ const MONTHS = [
   "2027-02", "2027-03", "2027-04", "2027-05"
 ];
 const TEACHER_HEADERS = ["Ma GV", "Ho ten GV", "Mon", "Email", "Ma bao mat"];
-const TEACHER_SEED_NAMES = [
-  "Nguyễn Duy Hoài", "Đinh Thị Oanh", "Nguyễn Thị Quyên", "Võ Thị Kiều Tiên",
-  "Hồ Minh Triều", "Hồ Ngọc Đệ", "Tô Thị Thùy Dung", "Võ Thị Kim Nga",
-  "Hà Thị Hoàng Oanh", "Lê Thị Mỹ Phụng", "Nguyễn Thị Thanh Vân", "Trần Thị Vân",
-  "Trần Thị Thu Hồ", "Trương Thị Kim Liễu", "Lê Thị Xuân Mai", "Nguyễn Ánh Nguyệt",
-  "Lê Thị Ngọc Giàu", "Võ Văn Hà", "Nguyễn Thị Thu Hà", "Nguyễn Thị Phước Hoài",
-  "Châu Thị Cẩm Hồng", "Võ Thị Út Thuỷ", "Nguyễn Thị Bích Tuyền", "Lê Văn Cường",
-  "Nguyễn Thị Tú Huyên", "Võ Văn Tuấn Nhỏ", "Lê Văn Phúc", "Trần Hưng Việt",
-  "Nguyễn Thái Thị Thu An", "Nguyễn Thị Nhựt Băng", "Võ Thị Lợi", "Dương Văn Nghiêm",
-  "Trịnh Thị Nhung", "Thcs Tây Phú", "Phạm Phú Phúc", "Trương Thanh Phương",
-  "Bùi Lê Phạm Thị Diễm Phương", "Lê Thành Thạo", "Nguyễn Sỹ Tuấn"
+const TEACHER_SEED_ROWS = [
+  ["100001", "Trương Thanh Phương", "Kế toán", "TP105", "682314"],
+  ["100002", "Nguyễn Thị Thu Thủy", "Thủ quỹ", "TP318", "491205"],
+  ["100003", "Nguyễn Thái Thị Thu An", "Văn thư", "TP742", "835619"],
+  ["100004", "Trịnh Thị Nhung", "Y tế", "TP529", "204781"],
+  ["100005", "Huỳnh Thị Diễm Trinh", "Y tế", "TP681", "951340"],
+  ["100006", "Dương Văn Nghiêm", "Bảo vệ", "TP407", "316892"],
+  ["100007", "Dương Trí Hiếu", "Bảo vệ", "TP853", "742168"],
+  ["100008", "Đinh Kim Lài", "CBQL", "TP214", "583920"],
+  ["100009", "Lê Thị Xuân Mai", "Ngữ văn", "TP936", "129475"],
+  ["100010", "Nguyễn Ánh Nguyệt", "Ngữ văn", "TP162", "674830"],
+  ["100011", "Trương Thị Kim Liễu", "Ngữ văn", "TP870", "430591"],
+  ["100012", "Trần Thị Thu Hồ", "Ngữ văn", "TP345", "891247"],
+  ["100013", "Đào Thị Thùy Trang", "Ngữ văn", "TP619", "506718"],
+  ["100014", "Dương Nhật Minh", "Ngữ văn", "TP784", "248309"],
+  ["100015", "Đinh Thái Quyển", "Tư vấn tâm lý học sinh", "TP450", "913682"],
+  ["100016", "Phạm Thị Hường", "Thư viện", "TP293", "375421"],
+  ["100017", "Lâm Thị Thúy Quỳnh", "Thư viện", "TP827", "682054"],
+  ["100018", "Võ Thanh Phong", "CBQL", "TP138", "754910"],
+  ["100019", "Lâm Thị Giữ", "Lịch sử - Địa lý", "TP674", "319582"],
+  ["100020", "Nguyễn Thị Diễm Thùy", "Lịch sử - GDCD", "TP503", "842607"],
+  ["100021", "Lê Đức Thắng", "Lịch sử - Địa lý", "TP941", "196358"],
+  ["100022", "Phạm Xuân Thưởng", "Lịch sử - Địa lý", "TP286", "620473"],
+  ["100023", "Lê Hồng Hải", "Địa lý", "TP715", "487129"],
+  ["100024", "Trần Thị Vân", "GDCD", "TP839", "935814"],
+  ["100025", "Nguyễn Thị Thanh Vân", "Lịch sử", "TP362", "271406"],
+  ["100026", "Võ Thị Kim Nga", "Lịch sử - Địa lý", "TP597", "504831"],
+  ["100027", "Hồ Thị Phương Thảo", "TPT Đội", "TP420", "819675"],
+  ["100028", "Lê Thị Mỹ Phụng", "Tiếng Anh", "TP651", "362948"],
+  ["100029", "Hà Thị Hoàng Oanh", "Tiếng Anh", "TP198", "748201"],
+  ["100030", "Tô Thị Thùy Dung", "Tiếng Anh", "TP834", "591376"],
+  ["100031", "Lê Thị Thu Thảo", "Tiếng Anh", "TP476", "215890"],
+  ["100032", "Trần Ngô Mộng Quyền", "Tiếng Anh", "TP902", "670415"],
+  ["100033", "Hồ Minh Triều", "CBQL", "TP357", "983162"],
+  ["100034", "Nguyễn Văn Ngoan", "Toán", "TP728", "412589"],
+  ["100035", "Đinh Thị Oanh", "Toán", "TP185", "856023"],
+  ["100036", "Hồ Ngọc Đệ", "Toán", "TP639", "309741"],
+  ["100037", "Nguyễn Duy Hoài", "Toán", "TP491", "748135"],
+  ["100038", "Võ Thị Kiều Tiên", "Toán", "TP820", "163950"],
+  ["100039", "Bùi Thiện Nhân", "Toán", "TP264", "590284"],
+  ["100040", "Võ Văn Thái", "Toán", "TP573", "827416"],
+  ["100041", "Nguyễn Thị Quyên", "Tin học", "TP915", "436198"],
+  ["100042", "Lê Văn Cường", "Tin học", "TP386", "679052"],
+  ["100043", "Võ Văn Hà", "Vật lý", "TP749", "251843"],
+  ["100044", "Trương Thiện Tánh", "Hóa học - KHTN", "TP130", "918274"],
+  ["100045", "Nguyễn Thị Thu Hà", "Vật lý", "TP863", "384501"],
+  ["100046", "Châu Thị Cẩm Hồng", "Hóa - KHTN", "TP417", "760935"],
+  ["100047", "Nguyễn Thị Bích Tuyền", "Sinh học", "TP682", "529148"],
+  ["100048", "Nguyễn Thị Phước Hoài", "Hóa học", "TP259", "173860"],
+  ["100049", "Trương Thị Thủy Tiên", "Hóa học - KHTN", "TP904", "845219"],
+  ["100050", "Đặng Thị Ngọc Yến", "Vật lý - KHTN", "TP531", "631790"],
+  ["100051", "Võ Thị Út Thủy", "Công nghệ (KTCN)", "TP768", "408627"],
+  ["100052", "Lê Thị Ngọc Giàu", "Công nghệ (KTNN)", "TP325", "952183"],
+  ["100053", "Nguyễn Sỹ Tuấn", "Thiết bị", "TP846", "219754"],
+  ["100054", "Diệp Văn Long", "Thiết bị", "TP172", "784306"],
+  ["100055", "Lê Văn Cường", "Giáo dục thể chất", "TP690", "340918"],
+  ["100056", "Trần Hưng Việt", "Giáo dục thể chất", "TP437", "895261"],
+  ["100057", "Lê Văn Phúc", "Giáo dục thể chất", "TP981", "627145"],
+  ["100058", "Dương Phương Hồng", "Giáo dục thể chất", "TP206", "158932"],
+  ["100059", "Trần Huỳnh Diễm Thê", "Âm nhạc", "TP753", "493076"],
+  ["100060", "Nguyễn Thị Tú Huyên", "Âm nhạc", "TP389", "816524"],
+  ["100061", "Bùi Lê Phạm Thị Diễm Phương", "Mĩ thuật", "TP612", "270491"],
+  ["100062", "Võ Văn Tuấn Nhỏ", "Mĩ thuật", "TP948", "534817"],
+  ["Admin", "Phạm Anh Dũng", "Quản trị hệ thống", "TP999", "123456"]
 ];
-const TEACHER_EMAILS = {
-  "Hồ Minh Triều": "c2tayphuts_trieu@angiang.edu.vn",
-  "Lê Văn Cường": "c2tayphuts_cuong@angiang.edu.vn",
-  "Nguyễn Duy Hoài": "c2tayphuts_hoai@angiang.edu.vn",
-  "Lê Thị Xuân Mai": "c2tayphuts_mai@angiang.edu.vn",
-  "Nguyễn Ánh Nguyệt": "c2tayphuts_nguyet@angiang.edu.vn",
-  "Trương Thị Kim Liễu": "c2tayphuts_lieu@angiang.edu.vn",
-  "Trần Thị Thu Hồ": "c2tayphuts_ho@angiang.edu.vn",
-  "Nguyễn Thị Thanh Vân": "c2tayphuts_van@angiang.edu.vn",
-  "Trần Thị Vân": "c2tayphuts_thivan@angiang.edu.vn",
-  "Võ Thị Kim Nga": "c2tayphuts_nga@angiang.edu.vn",
-  "Đinh Thị Oanh": "c2tayphuts_oanh@angiang.edu.vn",
-  "Hồ Ngọc Đệ": "c2tayphuts_de@angiang.edu.vn",
-  "Võ Thị Kiều Tiên": "c2tayphuts_ktien@angiang.edu.vn",
-  "Nguyễn Thị Quyên": "c2tayphuts_quyen@angiang.edu.vn",
-  "Võ Văn Hà": "c2tayphuts_ha@angiang.edu.vn",
-  "Nguyễn Thị Thu Hà": "c2tayphuts_thuha@angiang.edu.vn",
-  "Võ Thị Út Thuỷ": "c2tayphuts_thuy@angiang.edu.vn",
-  "Châu Thị Cẩm Hồng": "c2tayphuts_hong@angiang.edu.vn",
-  "Nguyễn Thị Bích Tuyền": "c2tayphuts_tuyen@angiang.edu.vn",
-  "Nguyễn Thị Phước Hoài": "c2tayphuts_phuochoai@angiang.edu.vn",
-  "Lê Thị Ngọc Giàu": "c2tayphuts_giau@angiang.edu.vn",
-  "Trần Hưng Việt": "c2tayphuts_viet@angiang.edu.vn",
-  "Lê Văn Phúc": "c2tayphuts_phuc@angiang.edu.vn",
-  "Nguyễn Thị Tú Huyên": "c2tayphuts_huyen@angiang.edu.vn",
-  "Võ Văn Tuấn Nhỏ": "c2tayphuts_nho@angiang.edu.vn"
-};
 
 const HEADER_ROWS = 2;
 const DATA_START_ROW = HEADER_ROWS + 1;
@@ -117,29 +143,16 @@ function leaderSummary_(payload) {
     .filter((row) => row[1] && !isTotalLabel_(row[1]))
     .map((row, index) => {
       const monthly = {};
-      MONTHS.forEach((month, monthIndex) => {
-        const colOffset = FIRST_MONTH_COL - 1 + monthIndex * 3;
-        monthly[month] = {
-          actual: Number(row[colOffset] || 0),
-          surplus: Number(row[colOffset + 1] || 0),
-          shortage: Number(row[colOffset + 2] || 0)
-        };
-      });
-      return {
-        id: "sheet-row-" + (index + 1),
-        name: String(row[1] || "").trim(),
-        subject: String(row[2] || "").trim(),
-        monthly: monthly
-      };
-    });
-  return { ok: true, teachers: teachers };
-}
-
 function validateAdmin_(payload) {
-  const cleanEmail = String(payload.email || "").trim().toLowerCase();
+  const cleanLogin = String(payload.email || payload.loginCode || payload.teacherCode || "").trim().toLowerCase();
   const securityCode = String(payload.securityCode || "").trim();
-  if (cleanEmail !== ADMIN_EMAIL) throw new Error("Chỉ admin mới được xuất tổng hợp lãnh đạo.");
-  const admin = teacherRecords_().find((item) => item.email.toLowerCase() === cleanEmail);
+  const isAdminLogin = cleanLogin === ADMIN_EMAIL.toLowerCase() || cleanLogin === "tp999" || cleanLogin === "admin";
+  if (!isAdminLogin) throw new Error("Chỉ admin mới được xuất tổng hợp lãnh đạo.");
+  const admin = teacherRecords_().find((item) => {
+    const code = String(item.teacherCode || "").trim().toLowerCase();
+    const login = String(item.email || "").trim().toLowerCase();
+    return login === cleanLogin || code === cleanLogin || login === "tp999" || login === ADMIN_EMAIL.toLowerCase() || code === "admin";
+  });
   if (!admin) throw new Error("Không tìm thấy tài khoản admin trong danh sách giáo viên.");
   if (String(admin.securityCode) !== securityCode) throw new Error("Sai mật khẩu admin.");
   return admin;
@@ -195,50 +208,23 @@ function ensureTeacherDirectory_() {
   }
 
   const lastRow = sheet.getLastRow();
-  const existingNames = lastRow >= 2
-    ? sheet.getRange(2, 2, lastRow - 1, 1).getValues().flat().map((name) => String(name).trim())
+  const existingCodes = lastRow >= 2
+    ? sheet.getRange(2, 1, lastRow - 1, 1).getValues().flat().map((c) => String(c).trim())
     : [];
   const rows = [];
-  TEACHER_SEED_NAMES.forEach((name, index) => {
-    if (!existingNames.includes(name)) {
-      rows.push([
-        String(100001 + index),
-        name,
-        defaultSubject_(name),
-        teacherEmail_(name),
-        randomSecurityCode_()
-      ]);
+  TEACHER_SEED_ROWS.forEach((seed) => {
+    if (!existingCodes.includes(seed[0])) {
+      rows.push(seed);
     }
   });
   if (rows.length) {
     sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, TEACHER_HEADERS.length).setValues(rows);
   }
 
-  const updatedLastRow = sheet.getLastRow();
-  if (updatedLastRow >= 2) {
-    const values = sheet.getRange(2, 1, updatedLastRow - 1, TEACHER_HEADERS.length).getValues();
-    let changed = false;
-    values.forEach((row, index) => {
-      if (!row[0] && row[1]) {
-        row[0] = String(100001 + index);
-        changed = true;
-      }
-      if (!row[4] && row[1]) {
-        row[4] = randomSecurityCode_();
-        changed = true;
-      }
-      if (!row[3] && row[1] && teacherEmail_(row[1])) {
-        row[3] = teacherEmail_(row[1]);
-        changed = true;
-      }
-    });
-    if (changed) sheet.getRange(2, 1, values.length, TEACHER_HEADERS.length).setValues(values);
-  }
-
   sheet.setColumnWidth(1, 95);
   sheet.setColumnWidth(2, 240);
   sheet.setColumnWidth(3, 180);
-  sheet.setColumnWidth(4, 230);
+  sheet.setColumnWidth(4, 150);
   sheet.setColumnWidth(5, 110);
   return sheet;
 }
@@ -271,15 +257,22 @@ function teachersResponse_() {
 }
 
 function loginTeacher_(payload) {
-  const cleanEmail = String(payload.email || "").trim().toLowerCase();
+  const cleanLogin = String(payload.email || payload.loginCode || payload.teacherCode || "").trim().toLowerCase();
   const securityCode = String(payload.securityCode || "").trim();
-  if (!cleanEmail) throw new Error("Vui lòng nhập email đăng nhập.");
+  if (!cleanLogin) throw new Error("Vui lòng nhập mã giáo viên đăng nhập.");
   if (!/^\d{6}$/.test(securityCode)) throw new Error("Vui lòng nhập mật khẩu 6 chữ số.");
 
-  const teacher = teacherRecords_().find((item) => item.email.toLowerCase() === cleanEmail);
-  if (!teacher) throw new Error("Nhập sai mail.");
+  const teachers = teacherRecords_();
+  const teacher = teachers.find((item) => {
+    const code = String(item.teacherCode || "").trim().toLowerCase();
+    const login = String(item.email || "").trim().toLowerCase();
+    const name = String(item.name || "").trim().toLowerCase();
+    return login === cleanLogin || code === cleanLogin || name === cleanLogin || slugify_(item.name) === slugify_(cleanLogin);
+  });
+
+  if (!teacher) throw new Error("Không tìm thấy mã giáo viên trong danh sách.");
   if (String(teacher.securityCode) !== securityCode) {
-    throw new Error("Sai mật khẩu. Bạn có thể bấm Quên mật khẩu và vào mail trên để lấy mật khẩu mới.");
+    throw new Error("Sai mật khẩu. Vui lòng kiểm tra lại mã bảo mật 6 số được cấp.");
   }
 
   return {
@@ -324,22 +317,27 @@ function findTeacherForPayload_(payload, teacherCode) {
 
 function resetSecurityCode_(payload) {
   const teacherCode = normalizeKey_(payload.teacherCode || payload.teacherId || "");
-  const cleanEmail = String(payload.email || "").trim().toLowerCase();
-  if (!teacherCode && !cleanEmail) throw new Error("Thiếu mã giáo viên để đổi mã.");
+  const cleanLogin = String(payload.email || payload.loginCode || "").trim().toLowerCase();
+  if (!teacherCode && !cleanLogin) throw new Error("Thiếu mã giáo viên để đổi mã.");
   const teachers = teacherRecords_();
-  const teacher = teachers.find((item) => teacherCode && normalizeKey_(item.teacherCode) === teacherCode) ||
-    teachers.find((item) => cleanEmail && item.email.toLowerCase() === cleanEmail);
+  const teacher = teachers.find((item) => {
+    const code = String(item.teacherCode || "").trim().toLowerCase();
+    const login = String(item.email || "").trim().toLowerCase();
+    return (teacherCode && normalizeKey_(item.teacherCode) === teacherCode) ||
+      (cleanLogin && (login === cleanLogin || code === cleanLogin));
+  });
   if (!teacher) throw new Error("Không tìm thấy giáo viên trong danh sách.");
-  if (!teacher.email) throw new Error("Giáo viên này chưa có email trong danh sách.");
   const newCode = randomSecurityCode_();
   getTeacherSheet_().getRange(teacher.row, 5).setValue(newCode);
-  MailApp.sendEmail({
-    to: teacher.email,
-    cc: ADMIN_EMAIL,
-    subject: "Mật khẩu kê giờ THCS Tây Phú",
-    body: `Kính gửi ${teacher.name},\n\nMật khẩu kê giờ mới của thầy/cô là: ${newCode}\n\nVui lòng không chia sẻ mật khẩu này cho người khác.\n\nTHCS Tây Phú`
-  });
-  return { ok: true, email: teacher.email };
+  if (teacher.email && teacher.email.includes("@")) {
+    MailApp.sendEmail({
+      to: teacher.email,
+      cc: ADMIN_EMAIL,
+      subject: "Mật khẩu kê giờ THCS Tây Phú",
+      body: `Kính gửi ${teacher.name},\n\nMật khẩu kê giờ mới của thầy/cô là: ${newCode}\n\nVui lòng không chia sẻ mật khẩu này cho người khác.\n\nTHCS Tây Phú`
+    });
+  }
+  return { ok: true, email: teacher.email, newCode };
 }
 
 function ensureSheetLayout_(sheet) {

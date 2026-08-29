@@ -62,100 +62,92 @@ const defaultSigners = {
   teamLeaderName: "Lê Thị Mỹ Phụng"
 };
 
-const teacherNames = [
-  "Nguyễn Duy Hoài",
-  "Đinh Thị Oanh",
-  "Nguyễn Thị Quyên",
-  "Võ Thị Kiều Tiên",
-  "Hồ Minh Triều",
-  "Hồ Ngọc Đệ",
-  "Tô Thị Thùy Dung",
-  "Võ Thị Kim Nga",
-  "Hà Thị Hoàng Oanh",
-  "Lê Thị Mỹ Phụng",
-  "Nguyễn Thị Thanh Vân",
-  "Trần Thị Vân",
-  "Trần Thị Thu Hồ",
-  "Trương Thị Kim Liễu",
-  "Lê Thị Xuân Mai",
-  "Nguyễn Ánh Nguyệt",
-  "Lê Thị Ngọc Giàu",
-  "Võ Văn Hà",
-  "Nguyễn Thị Thu Hà",
-  "Nguyễn Thị Phước Hoài",
-  "Châu Thị Cẩm Hồng",
-  "Võ Thị Út Thuỷ",
-  "Nguyễn Thị Bích Tuyền",
-  "Lê Văn Cường",
-  "Nguyễn Thị Tú Huyên",
-  "Võ Văn Tuấn Nhỏ",
-  "Lê Văn Phúc",
-  "Trần Hưng Việt",
-  "Nguyễn Thái Thị Thu An",
-  "Nguyễn Thị Nhựt Băng",
-  "Võ Thị Lợi",
-  "Dương Văn Nghiêm",
-  "Trịnh Thị Nhung",
-  "Thcs Tây Phú",
-  "Phạm Phú Phúc",
-  "Trương Thanh Phương",
-  "Bùi Lê Phạm Thị Diễm Phương",
-  "Lê Thành Thạo",
-  "Nguyễn Sỹ Tuấn"
+function slugifyVietnamese(value) {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+const rawTeacherSeed = [
+  { code: "100001", name: "Trương Thanh Phương", subject: "Kế toán", loginCode: "TP105" },
+  { code: "100002", name: "Nguyễn Thị Thu Thủy", subject: "Thủ quỹ", loginCode: "TP318" },
+  { code: "100003", name: "Nguyễn Thái Thị Thu An", subject: "Văn thư", loginCode: "TP742" },
+  { code: "100004", name: "Trịnh Thị Nhung", subject: "Y tế", loginCode: "TP529" },
+  { code: "100005", name: "Huỳnh Thị Diễm Trinh", subject: "Y tế", loginCode: "TP681" },
+  { code: "100006", name: "Dương Văn Nghiêm", subject: "Bảo vệ", loginCode: "TP407" },
+  { code: "100007", name: "Dương Trí Hiếu", subject: "Bảo vệ", loginCode: "TP853" },
+  { code: "100008", name: "Đinh Kim Lài", subject: "CBQL", loginCode: "TP214" },
+  { code: "100009", name: "Lê Thị Xuân Mai", subject: "Ngữ văn", loginCode: "TP936" },
+  { code: "100010", name: "Nguyễn Ánh Nguyệt", subject: "Ngữ văn", loginCode: "TP162" },
+  { code: "100011", name: "Trương Thị Kim Liễu", subject: "Ngữ văn", loginCode: "TP870" },
+  { code: "100012", name: "Trần Thị Thu Hồ", subject: "Ngữ văn", loginCode: "TP345" },
+  { code: "100013", name: "Đào Thị Thùy Trang", subject: "Ngữ văn", loginCode: "TP619" },
+  { code: "100014", name: "Dương Nhật Minh", subject: "Ngữ văn", loginCode: "TP784" },
+  { code: "100015", name: "Đinh Thái Quyển", subject: "Tư vấn tâm lý học sinh", loginCode: "TP450" },
+  { code: "100016", name: "Phạm Thị Hường", subject: "Thư viện", loginCode: "TP293" },
+  { code: "100017", name: "Lâm Thị Thúy Quỳnh", subject: "Thư viện", loginCode: "TP827" },
+  { code: "100018", name: "Võ Thanh Phong", subject: "CBQL", loginCode: "TP138" },
+  { code: "100019", name: "Lâm Thị Giữ", subject: "Lịch sử - Địa lý", loginCode: "TP674" },
+  { code: "100020", name: "Nguyễn Thị Diễm Thùy", subject: "Lịch sử - GDCD", loginCode: "TP503" },
+  { code: "100021", name: "Lê Đức Thắng", subject: "Lịch sử - Địa lý", loginCode: "TP941" },
+  { code: "100022", name: "Phạm Xuân Thưởng", subject: "Lịch sử - Địa lý", loginCode: "TP286" },
+  { code: "100023", name: "Lê Hồng Hải", subject: "Địa lý", loginCode: "TP715" },
+  { code: "100024", name: "Trần Thị Vân", subject: "GDCD", loginCode: "TP839" },
+  { code: "100025", name: "Nguyễn Thị Thanh Vân", subject: "Lịch sử", loginCode: "TP362" },
+  { code: "100026", name: "Võ Thị Kim Nga", subject: "Lịch sử - Địa lý", loginCode: "TP597" },
+  { code: "100027", name: "Hồ Thị Phương Thảo", subject: "TPT Đội", loginCode: "TP420" },
+  { code: "100028", name: "Lê Thị Mỹ Phụng", subject: "Tiếng Anh", loginCode: "TP651" },
+  { code: "100029", name: "Hà Thị Hoàng Oanh", subject: "Tiếng Anh", loginCode: "TP198" },
+  { code: "100030", name: "Tô Thị Thùy Dung", subject: "Tiếng Anh", loginCode: "TP834" },
+  { code: "100031", name: "Lê Thị Thu Thảo", subject: "Tiếng Anh", loginCode: "TP476" },
+  { code: "100032", name: "Trần Ngô Mộng Quyền", subject: "Tiếng Anh", loginCode: "TP902" },
+  { code: "100033", name: "Hồ Minh Triều", subject: "CBQL", loginCode: "TP357" },
+  { code: "100034", name: "Nguyễn Văn Ngoan", subject: "Toán", loginCode: "TP728" },
+  { code: "100035", name: "Đinh Thị Oanh", subject: "Toán", loginCode: "TP185" },
+  { code: "100036", name: "Hồ Ngọc Đệ", subject: "Toán", loginCode: "TP639" },
+  { code: "100037", name: "Nguyễn Duy Hoài", subject: "Toán", loginCode: "TP491" },
+  { code: "100038", name: "Võ Thị Kiều Tiên", subject: "Toán", loginCode: "TP820" },
+  { code: "100039", name: "Bùi Thiện Nhân", subject: "Toán", loginCode: "TP264" },
+  { code: "100040", name: "Võ Văn Thái", subject: "Toán", loginCode: "TP573" },
+  { code: "100041", name: "Nguyễn Thị Quyên", subject: "Tin học", loginCode: "TP915" },
+  { code: "100042", name: "Lê Văn Cường", subject: "Tin học", loginCode: "TP386" },
+  { code: "100043", name: "Võ Văn Hà", subject: "Vật lý", loginCode: "TP749" },
+  { code: "100044", name: "Trương Thiện Tánh", subject: "Hóa học - KHTN", loginCode: "TP130" },
+  { code: "100045", name: "Nguyễn Thị Thu Hà", subject: "Vật lý", loginCode: "TP863" },
+  { code: "100046", name: "Châu Thị Cẩm Hồng", subject: "Hóa - KHTN", loginCode: "TP417" },
+  { code: "100047", name: "Nguyễn Thị Bích Tuyền", subject: "Sinh học", loginCode: "TP682" },
+  { code: "100048", name: "Nguyễn Thị Phước Hoài", subject: "Hóa học", loginCode: "TP259" },
+  { code: "100049", name: "Trương Thị Thủy Tiên", subject: "Hóa học - KHTN", loginCode: "TP904" },
+  { code: "100050", name: "Đặng Thị Ngọc Yến", subject: "Vật lý - KHTN", loginCode: "TP531" },
+  { code: "100051", name: "Võ Thị Út Thủy", subject: "Công nghệ (KTCN)", loginCode: "TP768" },
+  { code: "100052", name: "Lê Thị Ngọc Giàu", subject: "Công nghệ (KTNN)", loginCode: "TP325" },
+  { code: "100053", name: "Nguyễn Sỹ Tuấn", subject: "Thiết bị", loginCode: "TP846" },
+  { code: "100054", name: "Diệp Văn Long", subject: "Thiết bị", loginCode: "TP172" },
+  { code: "100055", name: "Lê Văn Cường", subject: "Giáo dục thể chất", loginCode: "TP690" },
+  { code: "100056", name: "Trần Hưng Việt", subject: "Giáo dục thể chất", loginCode: "TP437" },
+  { code: "100057", name: "Lê Văn Phúc", subject: "Giáo dục thể chất", loginCode: "TP981" },
+  { code: "100058", name: "Dương Phương Hồng", subject: "Giáo dục thể chất", loginCode: "TP206" },
+  { code: "100059", name: "Trần Huỳnh Diễm Thê", subject: "Âm nhạc", loginCode: "TP753" },
+  { code: "100060", name: "Nguyễn Thị Tú Huyên", subject: "Âm nhạc", loginCode: "TP389" },
+  { code: "100061", name: "Bùi Lê Phạm Thị Diễm Phương", subject: "Mĩ thuật", loginCode: "TP612" },
+  { code: "100062", name: "Võ Văn Tuấn Nhỏ", subject: "Mĩ thuật", loginCode: "TP948" },
+  { code: "Admin", name: "Phạm Anh Dũng", subject: "Quản trị hệ thống", loginCode: "TP999" }
 ];
 
-const teacherOverrides = {
-  "nguyen-thi-thanh-van": {
-    subject: "PHÂN MÔN LỊCH SỬ",
-    assignment: "Dạy 7A3",
-    salaryLevel: "3/8",
-    salaryCoeff: "4.68"
-  },
-  "tran-thi-van": {
-    subject: "GDCD",
-    assignment: "Dạy GDCD K6,7,8,9; HĐTN 6",
-    salaryLevel: "3",
-    salaryCoeff: "4.68"
-  }
-};
-
-const teacherEmailOverrides = {
-  "Hồ Minh Triều": "c2tayphuts_trieu@angiang.edu.vn",
-  "Lê Văn Cường": "c2tayphuts_cuong@angiang.edu.vn",
-  "Nguyễn Duy Hoài": "c2tayphuts_hoai@angiang.edu.vn",
-  "Lê Thị Xuân Mai": "c2tayphuts_mai@angiang.edu.vn",
-  "Nguyễn Ánh Nguyệt": "c2tayphuts_nguyet@angiang.edu.vn",
-  "Trương Thị Kim Liễu": "c2tayphuts_lieu@angiang.edu.vn",
-  "Trần Thị Thu Hồ": "c2tayphuts_ho@angiang.edu.vn",
-  "Nguyễn Thị Thanh Vân": "c2tayphuts_van@angiang.edu.vn",
-  "Trần Thị Vân": "c2tayphuts_thivan@angiang.edu.vn",
-  "Võ Thị Kim Nga": "c2tayphuts_nga@angiang.edu.vn",
-  "Đinh Thị Oanh": "c2tayphuts_oanh@angiang.edu.vn",
-  "Hồ Ngọc Đệ": "c2tayphuts_de@angiang.edu.vn",
-  "Võ Thị Kiều Tiên": "c2tayphuts_ktien@angiang.edu.vn",
-  "Nguyễn Thị Quyên": "c2tayphuts_quyen@angiang.edu.vn",
-  "Võ Văn Hà": "c2tayphuts_ha@angiang.edu.vn",
-  "Nguyễn Thị Thu Hà": "c2tayphuts_thuha@angiang.edu.vn",
-  "Võ Thị Út Thuỷ": "c2tayphuts_thuy@angiang.edu.vn",
-  "Châu Thị Cẩm Hồng": "c2tayphuts_hong@angiang.edu.vn",
-  "Nguyễn Thị Bích Tuyền": "c2tayphuts_tuyen@angiang.edu.vn",
-  "Nguyễn Thị Phước Hoài": "c2tayphuts_phuochoai@angiang.edu.vn",
-  "Lê Thị Ngọc Giàu": "c2tayphuts_giau@angiang.edu.vn",
-  "Trần Hưng Việt": "c2tayphuts_viet@angiang.edu.vn",
-  "Lê Văn Phúc": "c2tayphuts_phuc@angiang.edu.vn",
-  "Nguyễn Thị Tú Huyên": "c2tayphuts_huyen@angiang.edu.vn",
-  "Võ Văn Tuấn Nhỏ": "c2tayphuts_nho@angiang.edu.vn"
-};
-
-let teachers = teacherNames.map((name, index) => {
-  const id = slugifyVietnamese(name);
+let teachers = rawTeacherSeed.map((item) => {
+  const id = slugifyVietnamese(item.code + "-" + item.name);
   return {
     id,
     ...defaultTeacherInfo,
-    teacherCode: `GV${String(index + 1).padStart(4, "0")}`,
-    name,
-    email: teacherEmailOverrides[name] || "",
-    ...(teacherOverrides[id] || {})
+    teacherCode: item.code,
+    name: item.name,
+    subject: item.subject || "",
+    email: item.loginCode || ""
   };
 });
 
@@ -199,17 +191,6 @@ let state = {
 };
 let lastLeaderSummaryError = "";
 
-function slugifyVietnamese(value) {
-  return String(value)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 function dateOnly(value) {
   return new Date(`${value}T00:00:00`);
 }
@@ -219,6 +200,78 @@ function formatDate(value) {
   return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+function formatShortDate(value) {
+  const d = dateOnly(value);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function monthLabel(month) {
+  const [year, mm] = month.split("-");
+  return `tháng ${Number(mm)} năm ${year}`;
+}
+
+function storageKey() {
+  return recordStorageKey(state.teacherId, state.month);
+}
+
+function recordStorageKey(teacherId, month) {
+  return `ke-gio:${teacherId}:${month}`;
+}
+
+function googleSheetUrlKey() {
+  return "ke-gio:google-sheet-url";
+}
+
+function signerSettingsKey() {
+  return "ke-gio:signers";
+}
+
+function securityCodeKey(teacherCode) {
+  return `ke-gio:security-code:${teacherCode || state.teacherId}`;
+}
+
+function loginSessionKey() {
+  return "ke-gio:login-session";
+}
+
+function monthsFromWeeks() {
+  const months = new Set();
+  schoolWeeks.forEach((week) => {
+    const start = dateOnly(week.start);
+    const end = dateOnly(week.end);
+    const cursor = new Date(start);
+    cursor.setDate(1);
+    while (cursor <= end) {
+      months.add(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`);
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+  });
+  return [...months].sort();
+}
+
+function weeksForMonth(month) {
+  const [year, mm] = month.split("-").map(Number);
+  const monthStart = new Date(year, mm - 1, 1);
+  const monthEnd = new Date(year, mm, 0);
+  return schoolWeeks.filter((week) => dateOnly(week.start) <= monthEnd && dateOnly(week.end) >= monthStart);
+}
+
+function defaultEntries() {
+  return weeksForMonth(state.month).map((week) => ({
+    key: `${week.n || "holiday"}:${week.start}`,
+    n: week.n,
+    start: week.start,
+    end: week.end,
+    status: week.holiday ? "holiday" : "teaching",
+    content: week.holiday ? week.note : state.profile.assignment,
+    regular: week.holiday ? 0 : "",
+    extra: 0,
+    reduction: 0,
+    note: week.note || ""
+  }));
+}
+
+function loadCurrentRecord() {
 function formatShortDate(value) {
   const d = dateOnly(value);
   return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -322,6 +375,29 @@ function saveGoogleSheetUrl() {
   localStorage.setItem(googleSheetUrlKey(), normalizedGoogleScriptUrl(els.googleSheetUrl.value));
 }
 
+function normalizedGoogleScriptUrl(value) {
+  const url = String(value || "").trim();
+  if (!url || LEGACY_GOOGLE_SCRIPT_URLS.includes(url)) return DEFAULT_GOOGLE_SCRIPT_URL;
+  return url;
+}
+
+function isAdminEmail(email) {
+  const clean = String(email || "").trim().toLowerCase();
+  return clean === ADMIN_EMAIL.toLowerCase() || clean === "tp999" || clean === "admin";
+}
+
+function updateAdminConfigVisibility(isAdmin = false) {
+  els.adminConfigPanel.classList.toggle("hidden", !isAdmin);
+}
+
+function setLoginOverlayVisible(visible) {
+  els.loginOverlay.classList.toggle("hidden", !visible);
+}
+
+function setBrandTeacherName() {
+  els.brandTeacherName.textContent = state.profile.name || "";
+}
+
 function loadSignerSettings() {
   try {
     return { ...defaultSigners, ...(JSON.parse(localStorage.getItem(signerSettingsKey()) || "{}")) };
@@ -343,25 +419,6 @@ function googleScriptUrl() {
   return normalized;
 }
 
-function normalizedGoogleScriptUrl(value) {
-  const url = String(value || "").trim();
-  if (!url || LEGACY_GOOGLE_SCRIPT_URLS.includes(url)) return DEFAULT_GOOGLE_SCRIPT_URL;
-  return url;
-}
-
-function isAdminEmail(email) {
-  return String(email || "").trim().toLowerCase() === ADMIN_EMAIL;
-}
-
-function updateAdminConfigVisibility(isAdmin = false) {
-  els.adminConfigPanel.classList.toggle("hidden", !isAdmin);
-}
-
-function setLoginOverlayVisible(visible) {
-  els.loginOverlay.classList.toggle("hidden", !visible);
-}
-
-function setBrandTeacherName() {
   els.brandTeacherName.textContent = state.profile.name || "";
 }
 
@@ -507,6 +564,7 @@ async function loadLeaderSummaryFromGoogleSheet() {
     setSyncStatus(lastLeaderSummaryError, "error");
     return null;
   }
+
 
   setSyncStatus("Đang tải tổng hợp lãnh đạo từ Google Sheet...");
   try {
@@ -730,7 +788,7 @@ async function loginTeacher() {
     return;
   }
   if (!email) {
-    setSyncStatus("Vui lòng nhập email đăng nhập.", "error");
+    setSyncStatus("Vui lòng nhập mã giáo viên đăng nhập.", "error");
     return;
   }
   if (!/^\d{6}$/.test(securityCode)) {
@@ -761,10 +819,10 @@ async function requestLoginSecurityCode() {
     return;
   }
   if (!email) {
-    setSyncStatus("Nhập email ở ô Email đăng nhập, rồi bấm Quên mật khẩu để lấy mật khẩu mới.", "error");
+    setSyncStatus("Nhập mã giáo viên ở ô Mã giáo viên, rồi bấm Quên mật khẩu để lấy mật khẩu mới.", "error");
     return;
   }
-  setSyncStatus(`Đang gửi mã mới về ${email}...`);
+  setSyncStatus(`Đang yêu cầu mã mới cho ${email}...`);
   try {
     const result = await requestGoogleScript(url, { action: "resetCode", email });
     if (result.ok) {
@@ -772,7 +830,9 @@ async function requestLoginSecurityCode() {
       els.loginCode.value = "";
       showLoggedOutTeacherSelect();
       renderAll();
-      setSyncStatus(`Đã gửi mã mới. Vui lòng vào mail ${result.email || email} để lấy mã.`, "success");
+      setSyncStatus(result.email && result.email.includes("@")
+        ? `Đã gửi mã mới về mail ${result.email}.`
+        : (result.newCode ? `Đã tạo mã mới: ${result.newCode}.` : "Đã tạo mã mới thành công."), "success");
     } else {
       setSyncStatus(friendlyGoogleError(result.error) || "Không gửi được mã mới.", "error");
     }
