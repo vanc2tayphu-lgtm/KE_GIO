@@ -1,11 +1,22 @@
-const SHEET_NAME = "Tong hop ke gio 2026-2027";
+const SHEET_NAME = "Tong hop ke gio";
 const TEACHER_SHEET_NAME = "Danh sach giao vien";
-const ADMIN_EMAIL = "phdungvt@gmail.com";
+const HEADER_ROWS = 2;
+const DATA_START_ROW = 3;
+const FIRST_MONTH_COL = 4;
 const MONTHS = [
-  "2026-09", "2026-10", "2026-11", "2026-12", "2027-01",
-  "2027-02", "2027-03", "2027-04", "2027-05"
+  "2026-09",
+  "2026-10",
+  "2026-11",
+  "2026-12",
+  "2027-01",
+  "2027-02",
+  "2027-03",
+  "2027-04",
+  "2027-05"
 ];
 const TEACHER_HEADERS = ["Ma GV", "Ho ten GV", "Mon", "Email", "Ma bao mat"];
+const ADMIN_EMAIL = "phdungvt@gmail.com";
+
 const TEACHER_SEED_ROWS = [
   ["100001", "Trương Thanh Phương", "Kế toán", "TP105", "682314"],
   ["100002", "Nguyễn Thị Thu Thủy", "Thủ quỹ", "TP318", "491205"],
@@ -72,18 +83,14 @@ const TEACHER_SEED_ROWS = [
   ["Admin", "Phạm Anh Dũng", "Quản trị hệ thống", "TP999", "123456"]
 ];
 
-const HEADER_ROWS = 2;
-const DATA_START_ROW = HEADER_ROWS + 1;
-const FIRST_MONTH_COL = 4;
-const VISIBLE_COLS = FIRST_MONTH_COL - 1 + MONTHS.length * 3;
+const VISIBLE_COLS = 3 + MONTHS.length * 3;
 const TEACHER_KEY_COL = VISIBLE_COLS + 1;
 const UPDATED_AT_COL = VISIBLE_COLS + 2;
 
 function setupAuthorization() {
   ensureTeacherDirectory_();
   getSummarySheet_();
-  MailApp.getRemainingDailyQuota();
-  return "OK - Đã sẵn sàng cấp quyền gửi mail";
+  return "OK - Đã sẵn sàng";
 }
 
 function doPost(e) {
@@ -124,9 +131,8 @@ function handleAction_(payload) {
   if (payload.action === "changePassword") return changePassword_(payload);
   if (payload.action === "leaderSummary") return leaderSummary_(payload);
   if (payload.action === "upsertMonthlySummary") return upsertMonthlySummary_(payload);
-  throw new Error("Unsupported action");
+  throw new Error("Unsupported action: " + payload.action);
 }
-
 
 function changePassword_(payload) {
   const cleanLogin = String(payload.email || payload.loginCode || payload.teacherCode || "").trim().toLowerCase();
@@ -138,6 +144,7 @@ function changePassword_(payload) {
   if (!/^\d{6}$/.test(newPassword)) throw new Error("Mật khẩu mới phải gồm đúng 6 chữ số.");
   if (currentPassword === newPassword) throw new Error("Mật khẩu mới không được trùng với mật khẩu cũ.");
 
+  const sheet = ensureTeacherDirectory_();
   const teachers = teacherRecords_();
   const teacher = teachers.find((item) => {
     const code = String(item.teacherCode || "").trim().toLowerCase();
@@ -150,7 +157,7 @@ function changePassword_(payload) {
     throw new Error("Mật khẩu hiện tại không chính xác.");
   }
 
-  getTeacherSheet_().getRange(teacher.row, 5).setValue(newPassword);
+  sheet.getRange(teacher.row, 5).setValue(newPassword);
 
   return {
     ok: true,
@@ -175,6 +182,26 @@ function leaderSummary_(payload) {
     .filter((row) => row[1] && !isTotalLabel_(row[1]))
     .map((row, index) => {
       const monthly = {};
+      MONTHS.forEach((month, monthIndex) => {
+        const colIndex = FIRST_MONTH_COL - 1 + monthIndex * 3;
+        monthly[month] = {
+          actual: numberValue_(row[colIndex]),
+          surplus: numberValue_(row[colIndex + 1]),
+          shortage: numberValue_(row[colIndex + 2])
+        };
+      });
+      return {
+        id: slugify_(String(row[TEACHER_KEY_COL - 1] || row[1])) || `teacher-${index + 1}`,
+        name: String(row[1] || "").trim(),
+        subject: String(row[2] || "").trim(),
+        teacherCode: String(row[TEACHER_KEY_COL - 1] || "").trim(),
+        monthly
+      };
+    });
+
+  return { ok: true, teachers };
+}
+
 function validateAdmin_(payload) {
   const cleanLogin = String(payload.email || payload.loginCode || payload.teacherCode || "").trim().toLowerCase();
   const securityCode = String(payload.securityCode || "").trim();
@@ -361,14 +388,6 @@ function resetSecurityCode_(payload) {
   if (!teacher) throw new Error("Không tìm thấy giáo viên trong danh sách.");
   const newCode = randomSecurityCode_();
   getTeacherSheet_().getRange(teacher.row, 5).setValue(newCode);
-  if (teacher.email && teacher.email.includes("@")) {
-    MailApp.sendEmail({
-      to: teacher.email,
-      cc: ADMIN_EMAIL,
-      subject: "Mật khẩu kê giờ THCS Tây Phú",
-      body: `Kính gửi ${teacher.name},\n\nMật khẩu kê giờ mới của thầy/cô là: ${newCode}\n\nVui lòng không chia sẻ mật khẩu này cho người khác.\n\nTHCS Tây Phú`
-    });
-  }
   return { ok: true, email: teacher.email, newCode };
 }
 
@@ -381,73 +400,127 @@ function ensureSheetLayout_(sheet) {
   sheet.getRange("C1:C2").merge().setValue("Môn");
 
   MONTHS.forEach((month, index) => {
-    const col = FIRST_MONTH_COL + index * 3;
-    sheet.getRange(1, col, 1, 3).merge().setValue(monthTitle_(month));
-    sheet.getRange(2, col, 1, 3).setValues([["Tổng", "Thừa", "Thiếu"]]);
+    const startCol = FIRST_MONTH_COL + index * 3;
+    sheet.getRange(1, startCol, 1, 3).merge().setValue(monthTitle_(month));
+    sheet.getRange(2, startCol).setValue("Tổng");
+    sheet.getRange(2, startCol + 1).setValue("Thừa");
+    sheet.getRange(2, startCol + 2).setValue("Thiếu");
   });
 
-  sheet.getRange(1, TEACHER_KEY_COL).setValue("Teacher key");
-  sheet.getRange(1, UPDATED_AT_COL).setValue("Cập nhật");
-  sheet.hideColumns(TEACHER_KEY_COL, 2);
-  sheet.setFrozenRows(HEADER_ROWS);
-  sheet.setFrozenColumns(3);
+  sheet.getRange(1, TEACHER_KEY_COL, 2, 1).merge().setValue("Teacher key");
+  sheet.getRange(1, UPDATED_AT_COL, 2, 1).merge().setValue("Cập nhật");
 
-  sheet.setColumnWidth(1, 70);
-  sheet.setColumnWidth(2, 260);
-  sheet.setColumnWidth(3, 210);
-  for (let col = FIRST_MONTH_COL; col <= VISIBLE_COLS; col += 1) {
-    sheet.setColumnWidth(col, 105);
-  }
-
-  const header = sheet.getRange(1, 1, HEADER_ROWS, VISIBLE_COLS);
-  header
+  const headerRange = sheet.getRange(1, 1, HEADER_ROWS, VISIBLE_COLS);
+  headerRange
     .setFontFamily("Arial")
     .setFontSize(10)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setVerticalAlignment("middle")
-    .setBackground("#ffffff")
-    .setWrap(true);
-  header.setBorder(true, true, true, true, true, true, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  sheet.setRowHeight(1, 34);
-  sheet.setRowHeight(2, 34);
+    .setWrap(true)
+    .setBackground("#f2f2f2")
+    .setBorder(true, true, true, true, true, true, "#000000", SpreadsheetApp.BorderStyle.SOLID);
+
+  sheet.setColumnWidth(1, 45);
+  sheet.setColumnWidth(2, 220);
+  sheet.setColumnWidth(3, 160);
+  for (let c = FIRST_MONTH_COL; c <= VISIBLE_COLS; c++) {
+    sheet.setColumnWidth(c, 55);
+  }
+  sheet.setColumnWidth(TEACHER_KEY_COL, 120);
+  sheet.setColumnWidth(UPDATED_AT_COL, 160);
+  sheet.hideColumns(TEACHER_KEY_COL, 2);
+  sheet.setFrozenRows(HEADER_ROWS);
+  sheet.setFrozenColumns(3);
 }
 
 function findOrCreateTeacherRow_(sheet, payload) {
-  const key = teacherKey_(payload);
-  const lastDataRow = getLastTeacherRow_(sheet);
-  if (lastDataRow >= DATA_START_ROW) {
-    const keys = sheet.getRange(DATA_START_ROW, TEACHER_KEY_COL, lastDataRow - HEADER_ROWS, 1).getValues().flat();
-    const keyIndex = keys.findIndex((value) => String(value) === String(key));
-    if (keyIndex >= 0) return DATA_START_ROW + keyIndex;
+  const lastTeacherRow = getLastTeacherRow_(sheet);
+  if (lastTeacherRow >= DATA_START_ROW) {
+    const numRows = lastTeacherRow - HEADER_ROWS;
+    const names = sheet.getRange(DATA_START_ROW, 2, numRows, 1).getValues().flat();
+    const subjects = sheet.getRange(DATA_START_ROW, 3, numRows, 1).getValues().flat();
+    const keys = sheet.getRange(DATA_START_ROW, TEACHER_KEY_COL, numRows, 1).getValues().flat();
+
+    const targetKey = normalizeKey_(payload.teacherCode || payload.teacherId || "");
+    const targetName = normalizeName_(payload.teacherName || "");
+    const targetSubject = normalizeName_(payload.subject || "");
+
+    for (let i = 0; i < names.length; i++) {
+      const rowKey = normalizeKey_(keys[i]);
+      const rowName = normalizeName_(names[i]);
+      const rowSubject = normalizeName_(subjects[i]);
+
+      if (targetKey && rowKey && targetKey === rowKey) {
+        return DATA_START_ROW + i;
+      }
+      if (targetName && rowName && targetName === rowName) {
+        if (!targetSubject || !rowSubject || targetSubject === rowSubject) {
+          return DATA_START_ROW + i;
+        }
+      }
+    }
   }
 
   const totalRow = getTotalRow_(sheet);
+  let insertAt = totalRow ? totalRow : lastTeacherRow + 1;
   if (totalRow) {
-    sheet.insertRowsBefore(totalRow, 1);
-    return totalRow;
+    sheet.insertRowBefore(totalRow);
   }
-  return lastDataRow + 1;
+
+  sheet.getRange(insertAt, 1, 1, UPDATED_AT_COL).clearContent();
+  return insertAt;
 }
 
 function renumberTeachers_(sheet) {
-  const lastRow = getLastTeacherRow_(sheet);
-  if (lastRow < DATA_START_ROW) return;
-  const count = lastRow - HEADER_ROWS;
-  const values = Array.from({ length: count }, (_, index) => [index + 1]);
-  sheet.getRange(DATA_START_ROW, 1, count, 1).setValues(values);
+  const lastTeacherRow = getLastTeacherRow_(sheet);
+  if (lastTeacherRow < DATA_START_ROW) return;
+  const count = lastTeacherRow - HEADER_ROWS;
+  const numbers = [];
+  for (let i = 1; i <= count; i++) {
+    numbers.push([i]);
+  }
+  sheet.getRange(DATA_START_ROW, 1, count, 1).setValues(numbers);
 }
 
 function updateTotalsRow_(sheet) {
   const lastTeacherRow = getLastTeacherRow_(sheet);
-  if (lastTeacherRow < DATA_START_ROW) return;
-  const totalRow = lastTeacherRow + 1;
-  sheet.getRange(totalRow, 1, 1, VISIBLE_COLS).clearContent();
+  let totalRow = getTotalRow_(sheet);
+
+  if (lastTeacherRow < DATA_START_ROW) {
+    if (totalRow) sheet.deleteRow(totalRow);
+    return;
+  }
+
+  const targetRow = lastTeacherRow + 1;
+  if (!totalRow) {
+    sheet.insertRowAfter(lastTeacherRow);
+    totalRow = targetRow;
+  } else if (totalRow !== targetRow) {
+    sheet.deleteRow(totalRow);
+    sheet.insertRowAfter(lastTeacherRow);
+    totalRow = targetRow;
+  }
+
+  sheet.getRange(totalRow, 1).clearContent();
   sheet.getRange(totalRow, 2).setValue("TỔNG");
-  for (let col = FIRST_MONTH_COL; col <= VISIBLE_COLS; col += 1) {
+  sheet.getRange(totalRow, 3).clearContent();
+
+  for (let col = FIRST_MONTH_COL; col <= VISIBLE_COLS; col++) {
     const letter = columnLetter_(col);
     sheet.getRange(totalRow, col).setFormula(`=SUM(${letter}${DATA_START_ROW}:${letter}${lastTeacherRow})`);
   }
+
+  sheet.getRange(totalRow, TEACHER_KEY_COL, 1, 2).clearContent();
+  const totalRange = sheet.getRange(totalRow, 1, 1, VISIBLE_COLS);
+  totalRange
+    .setFontFamily("Arial")
+    .setFontSize(10)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle")
+    .setBackground("#f2f2f2")
+    .setBorder(true, true, true, true, true, true, "#000000", SpreadsheetApp.BorderStyle.SOLID);
 }
 
 function styleDataRows_(sheet) {
@@ -466,10 +539,6 @@ function styleDataRows_(sheet) {
   if (totalRow >= DATA_START_ROW && totalRow <= lastRow) {
     sheet.getRange(totalRow, 1, 1, VISIBLE_COLS).setFontWeight("bold");
   }
-}
-
-function teacherKey_(payload) {
-  return payload.teacherCode || payload.teacherId || payload.teacherName || "";
 }
 
 function getLastTeacherRow_(sheet) {
@@ -515,22 +584,17 @@ function monthTitle_(month) {
   return "THÁNG " + Number(month.slice(5, 7));
 }
 
-function defaultSubject_(name) {
-  if (name === "Nguyễn Thị Thanh Vân") return "PHÂN MÔN LỊCH SỬ";
-  if (name === "Trần Thị Vân") return "GDCD";
-  return "";
-}
-
-function teacherEmail_(name) {
-  return TEACHER_EMAILS[String(name || "").trim()] || "";
-}
-
 function randomSecurityCode_() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
+function numberValue_(val) {
+  const n = Number(val);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function slugify_(value) {
-  return String(value)
+  return String(value || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/đ/g, "d")
@@ -553,15 +617,6 @@ function normalizeName_(value) {
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function maskEmail_(email) {
-  const value = String(email || "").trim();
-  if (!value.includes("@")) return "";
-  const parts = value.split("@");
-  const name = parts[0];
-  const maskedName = name.length <= 2 ? name[0] + "*" : name.slice(0, 2) + "***";
-  return maskedName + "@" + parts.slice(1).join("@");
 }
 
 function json_(value) {
