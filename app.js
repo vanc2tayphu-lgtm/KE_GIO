@@ -1,26 +1,4 @@
 
-let currentSchoolWeeks = [...schoolWeeks];
-
-function getActiveSchoolWeeks() {
-  const selectedYear = (document.querySelector("#schoolYearSelect")?.value || localStorage.getItem("ke-gio:school-year") || "2026-2027").split("-")[0];
-  const startYear = Number(selectedYear) || 2026;
-  const diff = startYear - 2026;
-  if (diff === 0) return schoolWeeks;
-
-  return schoolWeeks.map((week) => {
-    const s = new Date(`${week.start}T00:00:00`);
-    s.setFullYear(s.getFullYear() + diff);
-    const e = new Date(`${week.end}T00:00:00`);
-    e.setFullYear(e.getFullYear() + diff);
-    const formatYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    return {
-      ...week,
-      start: formatYMD(s),
-      end: formatYMD(e)
-    };
-  });
-}
-
 const schoolWeeks = [
   { n: 1, start: "2026-09-07", end: "2026-09-13", note: "Bắt đầu học kỳ I" },
   { n: 2, start: "2026-09-14", end: "2026-09-20", note: "" },
@@ -61,6 +39,27 @@ const schoolWeeks = [
   { n: 35, start: "2027-05-17", end: "2027-05-23", note: "Kết thúc học kỳ II" },
   { n: null, start: "2027-05-24", end: "2027-05-30", note: "Tổng kết", holiday: true }
 ];
+
+function getActiveSchoolWeeks() {
+  const selectedYear = (document.querySelector("#schoolYearSelect")?.value || localStorage.getItem("ke-gio:school-year") || "2026-2027").split("-")[0];
+  const startYear = Number(selectedYear) || 2026;
+  const diff = startYear - 2026;
+  if (diff === 0) return schoolWeeks;
+
+  return schoolWeeks.map((week) => {
+    const s = new Date(`${week.start}T00:00:00`);
+    s.setFullYear(s.getFullYear() + diff);
+    const e = new Date(`${week.end}T00:00:00`);
+    e.setFullYear(e.getFullYear() + diff);
+    const formatYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return {
+      ...week,
+      start: formatYMD(s),
+      end: formatYMD(e)
+    };
+  });
+}
+
 
 const defaultTeacherInfo = {
   teacherCode: "",
