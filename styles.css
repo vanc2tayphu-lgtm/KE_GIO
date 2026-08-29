@@ -1189,3 +1189,29 @@ button.secondary:hover {
   color: #ffffff;
   font-weight: 700;
 }
+
+/* ==========================================================================
+   CONTENT BOTTOM: CHỮ KÝ DUYỆT & NÚT HÀNH ĐỘNG (BÊN PHẢI)
+   ========================================================================== */
+.content-bottom-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.content-bottom-panels .panel {
+  margin: 0;
+}
+
+.content-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (max-width: 980px) {
+  .content-bottom-panels {
+    grid-template-columns: 1fr;
+  }
+}
