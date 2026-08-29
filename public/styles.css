@@ -903,3 +903,78 @@ th {
   padding: 0 8px;
   min-height: 32px;
 }
+
+
+/* Entry table in preview form style */
+.entry-preview-style-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.entry-preview-style-table th {
+  background: #fff;
+  color: #000;
+  font-weight: bold;
+  padding: 6px 4px;
+  font-size: 13px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.entry-preview-style-table td {
+  padding: 4px 4px;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 14px;
+}
+
+.entry-preview-style-table input {
+  width: 100%;
+  padding: 6px 4px;
+  border: 1px solid #cdd8d4;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+  background: #fbfdfc;
+}
+
+.entry-preview-style-table input:focus {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(31, 122, 98, 0.15);
+}
+
+.entry-preview-style-table select {
+  width: 100%;
+  padding: 5px 2px;
+  font-size: 12px;
+  border: 1px solid #cdd8d4;
+  border-radius: 4px;
+  background: white;
+}
+
+.entry-preview-style-table .col-calculated {
+  font-weight: 700;
+  color: var(--text);
+  background: #fdfdfd;
+}
+
+.entry-preview-style-table .col-surplus {
+  font-weight: 800;
+  color: var(--accent-dark);
+}
+
+.entry-preview-style-table .col-shortage {
+  font-weight: 800;
+  color: var(--danger);
+}
+
+.entry-preview-style-table tfoot td {
+  border-top: 2px solid #000;
+  border-bottom: 2px solid #000;
+  font-weight: 800;
+  background: #f9fbfb;
+  height: 36px;
+  font-size: 14px;
+}

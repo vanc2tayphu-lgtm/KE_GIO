@@ -943,33 +943,53 @@ function renderAllowances() {
 }
 
 function renderWeeks() {
-  const { rows } = calculate();
+  const { rows, totals } = calculate();
   els.weekRows.innerHTML = "";
-  els.weekCountBadge.textContent = `${rows.length} dòng`;
+  els.weekCountBadge.textContent = `${rows.length} tuần`;
   const teachingWeeks = rows.filter((row) => row.status === "teaching").length;
-  els.weekHint.textContent = `${monthLabel(state.month)} có ${rows.length} dòng theo khung năm học; đang kê ${teachingWeeks} dòng.`;
+  els.weekHint.textContent = `${monthLabel(state.month)} có ${rows.length} tuần; đang kê ${teachingWeeks} tuần giảng dạy.`;
 
   rows.forEach((row, index) => {
     const tr = document.createElement("tr");
     tr.className = row.status === "holiday" ? "status-holiday" : row.status === "no_report" ? "status-no-report" : "";
-    const resultClass = row.diff < 0 ? "result-negative" : row.diff > 0 ? "result-positive" : "";
+    
+    // Calculate display values
+    const [year, mm] = state.month.split("-");
+    const dStart = dateOnly(row.start);
+    const dEnd = dateOnly(row.end);
+    const timeLabel = `${row.n ? `Tuần ${row.n}` : "Nghỉ"}<br><span style="font-size:12px; color:var(--muted);">Từ ${String(dStart.getDate()).padStart(2, '0')}/${String(dStart.getMonth() + 1).padStart(2, '0')}<br>Đến ${String(dEnd.getDate()).padStart(2, '0')}/${String(dEnd.getMonth() + 1).padStart(2, '0')}</span>`;
+    
+    const surplusDisplay = row.diff > 0 ? formatNumber(row.diff) : "";
+    const shortageDisplay = row.diff < 0 ? formatNumber(Math.abs(row.diff)) : "";
+
     tr.innerHTML = `
-      <td>${row.n ? `Tuần ${row.n}` : "Nghỉ"}</td>
-      <td>${formatDate(row.start)} - ${formatDate(row.end)}</td>
+      <td>${timeLabel}</td>
+      <td>
+        <input class="wide-input" data-field="content" value="${escapeAttr(row.content || "")}" placeholder="Dạy thay ai, lớp, tiết, ngày..." style="text-align: left;" />
+      </td>
+      <td>
+        <input data-field="regular" type="number" min="0" step="0.5" value="${escapeAttr(row.regular || "")}" placeholder="0" />
+      </td>
+      <td>
+        <input data-field="extra" type="number" min="0" step="0.5" value="${escapeAttr(row.extra || "")}" placeholder="0" />
+      </td>
+      <td class="col-calculated">${row.actual ? formatNumber(row.actual) : (row.status === "teaching" ? "0" : "")}</td>
+      <td class="col-calculated">${row.status === "teaching" ? formatNumber(row.norm) : ""}</td>
+      <td>
+        <input data-field="reduction" type="number" min="0" step="0.5" value="${escapeAttr(row.reduction || "")}" placeholder="0" />
+      </td>
+      <td class="col-calculated">${row.status === "teaching" ? formatNumber(row.remainingNorm) : ""}</td>
+      <td class="col-surplus">${surplusDisplay}</td>
+      <td class="col-shortage">${shortageDisplay}</td>
       <td>
         <select data-field="status">
           <option value="teaching"${row.status === "teaching" ? " selected" : ""}>Kê giờ</option>
-          <option value="no_report"${row.status === "no_report" ? " selected" : ""}>Không kê giờ</option>
-          <option value="holiday"${row.status === "holiday" ? " selected" : ""}>Nghỉ theo khung</option>
+          <option value="no_report"${row.status === "no_report" ? " selected" : ""}>Không kê</option>
+          <option value="holiday"${row.status === "holiday" ? " selected" : ""}>Nghỉ khung</option>
         </select>
       </td>
-      <td><input class="wide-input" data-field="content" value="${escapeAttr(row.content || "")}" /></td>
-      <td><input data-field="regular" type="number" min="0" step="0.5" value="${escapeAttr(row.regular || "")}" /></td>
-      <td><input data-field="extra" type="number" min="0" step="0.5" value="${escapeAttr(row.extra || "")}" /></td>
-      <td><input data-field="reduction" type="number" min="0" step="0.5" value="${escapeAttr(row.reduction || "")}" /></td>
-      <td class="${resultClass}">${resultText(row.diff)}</td>
-      <td><input class="note-input" data-field="note" value="${escapeAttr(row.note || "")}" /></td>
     `;
+
     tr.querySelectorAll("[data-field]").forEach((input) => {
       const updateEntry = () => {
         state.entries[index][input.dataset.field] = input.value;
@@ -991,8 +1011,33 @@ function renderWeeks() {
         renderAll();
       });
     });
+
     els.weekRows.appendChild(tr);
   });
+
+  // Render Total Foot row
+  const foot = document.querySelector("#weekTotalsFoot");
+  if (foot) {
+    const totalSurplus = rows.reduce((sum, row) => sum + Math.max(row.diff, 0), 0);
+    const totalShortage = rows.reduce((sum, row) => sum + Math.max(-row.diff, 0), 0);
+    const totalRegular = rows.reduce((sum, row) => sum + row.regular, 0);
+    const totalExtra = rows.reduce((sum, row) => sum + row.extra, 0);
+
+    foot.innerHTML = `
+      <tr class="total-row">
+        <td colspan="2" style="text-align: center; font-weight: 800;">CỘNG</td>
+        <td>${totalRegular ? formatNumber(totalRegular) : "0"}</td>
+        <td>${totalExtra ? formatNumber(totalExtra) : "0"}</td>
+        <td>${totals.actual ? formatNumber(totals.actual) : "0"}</td>
+        <td>${totals.norm ? formatNumber(totals.norm) : "0"}</td>
+        <td>${totals.reduction ? formatNumber(totals.reduction) : "0"}</td>
+        <td>${totals.remainingNorm ? formatNumber(totals.remainingNorm) : "0"}</td>
+        <td class="col-surplus">${totalSurplus ? formatNumber(totalSurplus) : "0"}</td>
+        <td class="col-shortage">${totalShortage ? formatNumber(totalShortage) : "0"}</td>
+        <td></td>
+      </tr>
+    `;
+  }
 }
 
 function renderPreview() {
@@ -2093,3 +2138,8 @@ window.__keGio = {
 };
 
 init();
+
+
+window.openChangePasswordModal = openChangePasswordModal;
+window.closeChangePasswordModal = closeChangePasswordModal;
+window.changePasswordHandler = changePasswordHandler;
