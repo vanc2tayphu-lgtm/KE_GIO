@@ -749,33 +749,43 @@ button.secondary:hover {
 
 .allowance-table {
   border: 2px solid #000;
-  margin-left: 78px;
-  width: calc(100% - 78px);
+  margin-left: 0;
+  width: 100%;
 }
 
-.allowance-no { width: 7%; }
-.allowance-duty { width: 49%; }
-.allowance-from, .allowance-to { width: 8.5%; }
-.allowance-periods { width: 9%; }
-.allowance-note { width: 18%; }
+.allowance-no { width: 6%; }
+.allowance-duty { width: 34%; }
+.allowance-from, .allowance-to { width: 15%; }
+.allowance-periods { width: 10%; }
+.allowance-note { width: 20%; }
 
 .allowance-table th,
 .allowance-table td {
   height: 24px;
-  font-size: 16px;
+  font-size: 15px;
+  padding: 3px 4px;
+  white-space: nowrap;
 }
 
 .allowance-table th:nth-child(1) {
-  width: 42px;
+  width: 36px;
 }
 
 .mau-rank {
-  display: grid;
-  grid-template-columns: 90px 125px 64px 90px 112px 90px 130px 1fr;
-  gap: 8px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin: 6px 0 4px;
-  font-size: 17px;
+  margin: 10px 0 6px;
+  font-size: 15.5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mau-rank > div {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  white-space: nowrap;
 }
 
 .main-report-table {
