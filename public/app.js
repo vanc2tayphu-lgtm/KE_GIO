@@ -795,14 +795,10 @@ function openForgotPasswordModal() {
   const overlay = document.querySelector("#forgotPasswordOverlay");
   const loginEmail = document.querySelector("#loginEmail")?.value.trim();
   const teacherInput = document.querySelector("#forgotTeacherCodeInput");
-  const emailInput = document.querySelector("#forgotEmailInput");
   const status = document.querySelector("#forgotPasswordStatus");
 
   if (teacherInput && loginEmail) {
     teacherInput.value = loginEmail;
-  }
-  if (emailInput) {
-    emailInput.value = loginEmail && loginEmail.includes("@") ? loginEmail : "";
   }
   if (status) {
     status.textContent = "";
@@ -820,13 +816,12 @@ async function sendForgotPasswordHandler() {
   const url = googleScriptUrl();
   saveGoogleSheetUrl();
   const teacherCode = document.querySelector("#forgotTeacherCodeInput")?.value.trim();
-  const targetEmail = document.querySelector("#forgotEmailInput")?.value.trim();
   const status = document.querySelector("#forgotPasswordStatus");
   const submitBtn = document.querySelector("#submitForgotPasswordBtn");
 
   if (!url) {
     if (status) {
-      status.textContent = "Chưa cấu hình Google Apps Script URL.";
+      status.textContent = "Chưa cấu hình Google Apps Script URL. Hoặc liên hệ admin trường";
       status.className = "sync-status error";
     }
     return;
@@ -840,16 +835,8 @@ async function sendForgotPasswordHandler() {
     return;
   }
 
-  if (!targetEmail || !targetEmail.includes("@")) {
-    if (status) {
-      status.textContent = "Vui lòng nhập địa chỉ email hợp lệ.";
-      status.className = "sync-status error";
-    }
-    return;
-  }
-
   if (status) {
-    status.textContent = "Đang kiểm tra và gửi mật khẩu về email...";
+    status.textContent = "Đang kiểm tra và gửi mật khẩu vào email của bạn...";
     status.className = "sync-status";
   }
 
@@ -864,28 +851,25 @@ async function sendForgotPasswordHandler() {
     const result = await requestGoogleScript(url, {
       action: "forgotPassword",
       teacherCode: teacherCode,
-      email: teacherCode,
-      targetEmail: targetEmail
+      email: teacherCode
     });
 
     if (result.ok) {
+      const emailText = result.email ? ` [${result.email}] ` : " ";
+      const msg = result.message || `Bạn hãy vào mail của bạn:${emailText}để lấy mật khẩu. Hoặc liên hệ admin trường`;
       if (status) {
-        status.textContent = result.message || ("Đã gửi mật khẩu về email " + targetEmail + " thành công!");
+        status.innerHTML = `<strong style="color: #15803d; line-height: 1.4; display: block;">${msg}</strong>`;
         status.className = "sync-status success";
       }
-      setTimeout(() => {
-        closeForgotPasswordModal();
-        alert(result.message || ("Đã gửi mật khẩu về email " + targetEmail + ". Vui lòng kiểm tra hộp thư!"));
-      }, 1500);
     } else {
       if (status) {
-        status.textContent = friendlyGoogleError(result.error) || "Không gửi được mật khẩu.";
+        status.textContent = friendlyGoogleError(result.error) || (result.error || "Không gửi được mật khẩu. Hoặc liên hệ admin trường");
         status.className = "sync-status error";
       }
     }
   } catch (err) {
     if (status) {
-      status.textContent = "Lỗi kết nối máy chủ: " + err.message;
+      status.textContent = "Lỗi kết nối máy chủ. Hoặc liên hệ admin trường";
       status.className = "sync-status error";
     }
   } finally {
@@ -893,7 +877,7 @@ async function sendForgotPasswordHandler() {
       submitBtn.disabled = false;
       submitBtn.classList.remove("is-loading");
       const label = submitBtn.querySelector(".button-label");
-      if (label) label.textContent = "Gửi mật khẩu";
+      if (label) label.textContent = "Gửi vào Email";
     }
   }
 }

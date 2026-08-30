@@ -14,7 +14,7 @@ const MONTHS = [
   "2027-04",
   "2027-05"
 ];
-const TEACHER_HEADERS = ["Ma GV", "Ho ten GV", "Mon", "Email", "Ma bao mat"];
+const TEACHER_HEADERS = ["Ma GV", "Ho ten GV", "Mon", "Ma dang nhap", "Ma bao mat", "Email"];
 const ADMIN_EMAIL = "phdungvt@gmail.com";
 
 const TEACHER_SEED_ROWS = [
@@ -292,15 +292,17 @@ function teacherRecords_() {
   const sheet = ensureTeacherDirectory_();
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
-  return sheet.getRange(2, 1, lastRow - 1, TEACHER_HEADERS.length).getValues()
+  return sheet.getRange(2, 1, lastRow - 1, Math.max(TEACHER_HEADERS.length, 6)).getValues()
     .filter((row) => row[0] && row[1])
     .map((row, index) => ({
       row: index + 2,
       teacherCode: String(row[0]).trim(),
       name: String(row[1]).trim(),
       subject: String(row[2] || "").trim(),
+      loginCode: String(row[3] || "").trim(),
       email: String(row[3] || "").trim(),
-      securityCode: String(row[4] || "").trim()
+      securityCode: String(row[4] || "").trim(),
+      personalEmail: String(row[5] || (row[3] && String(row[3]).includes("@") ? row[3] : "")).trim()
     }));
 }
 
@@ -377,42 +379,42 @@ function findTeacherForPayload_(payload, teacherCode) {
 function sendCurrentPassword_(payload) {
   const teacherCode = normalizeKey_(payload.teacherCode || payload.teacherId || "");
   const cleanLogin = String(payload.email || payload.loginCode || "").trim().toLowerCase();
-  const inputEmail = String(payload.targetEmail || payload.recipientEmail || payload.emailInput || "").trim();
 
-  if (!teacherCode && !cleanLogin) throw new Error("Vui lòng cung cấp mã giáo viên.");
+  if (!teacherCode && !cleanLogin) {
+    throw new Error("Vui lòng nhập mã giáo viên.");
+  }
 
   const teachers = teacherRecords_();
   const teacher = teachers.find((item) => {
     const code = String(item.teacherCode || "").trim().toLowerCase();
-    const login = String(item.email || "").trim().toLowerCase();
+    const login = String(item.loginCode || item.email || "").trim().toLowerCase();
     const name = String(item.name || "").trim().toLowerCase();
     return (teacherCode && normalizeKey_(item.teacherCode) === teacherCode) ||
       (cleanLogin && (login === cleanLogin || code === cleanLogin || name === cleanLogin || slugify_(item.name) === slugify_(cleanLogin)));
   });
 
-  if (!teacher) throw new Error("Không tìm thấy mã giáo viên '" + (cleanLogin || teacherCode) + "' trong danh sách.");
+  if (!teacher) {
+    throw new Error("Không tìm thấy mã giáo viên '" + (cleanLogin || teacherCode) + "'. Hoặc liên hệ Admin trường.");
+  }
 
-  // LẤY MẬT KHẨU HIỆN CÓ TRÊN SHEET (KHÔNG TẠO MÃ MỚI)
+  // LẤY MẬT KHẨU HIỆN CÓ TRÊN SHEET
   const currentPassword = String(teacher.securityCode || "").trim();
   if (!currentPassword) {
-    throw new Error("Tài khoản chưa có mật khẩu trên Sheet. Vui lòng liên hệ quản trị viên.");
+    throw new Error("Tài khoản chưa có mật khẩu trên hệ thống. Hoặc liên hệ Admin trường.");
   }
 
-  // Xác định email nhận
-  let sendTo = inputEmail;
-  if (!sendTo || !sendTo.includes("@")) {
-    sendTo = teacher.email && teacher.email.includes("@") ? teacher.email : "";
-  }
-  if (!sendTo || !sendTo.includes("@")) {
-    throw new Error("Vui lòng nhập địa chỉ email hợp lệ để nhận mật khẩu.");
+  // LẤY EMAIL CHÍNH CHỦ CỦA GIÁO VIÊN TRÊN SHEET
+  const targetEmail = String(teacher.personalEmail || "").trim();
+  if (!targetEmail || !targetEmail.includes("@")) {
+    throw new Error("Tài khoản chưa được liên kết Email trên hệ thống. Hoặc liên hệ Admin trường.");
   }
 
-  // GỬI EMAIL CHỨA MẬT KHẨU HIỆN CÓ
+  // GỬI EMAIL CHỨA MẬT KHẨU HIỆN CÓ VỀ ĐÚNG EMAIL ĐĂNG KÝ
   try {
     const subject = "[THCS Tây Phú] Mật khẩu đăng nhập Kê Giờ của Thầy/Cô " + teacher.name;
     const body = "Xin chào Thầy/Cô " + teacher.name + ",\n\n" +
       "Mật khẩu đăng nhập ứng dụng Kê Giờ THCS Tây Phú của Thầy/Cô là: " + currentPassword + "\n\n" +
-      "Mã giáo viên: " + (teacher.email || teacher.teacherCode) + "\n\n" +
+      "Mã giáo viên: " + (teacher.loginCode || teacher.teacherCode) + "\n\n" +
       "Vui lòng truy cập https://ke-gio.vercel.app để đăng nhập.\n\n" +
       "Trân trọng,\nTrường THCS Tây Phú";
 
@@ -424,7 +426,7 @@ function sendCurrentPassword_(payload) {
       '<p>Kính gửi Thầy/Cô: <strong style="color: #1e1b4b; font-size: 16px;">' + teacher.name + '</strong>,</p>' +
       '<p>Hệ thống gửi lại mật khẩu đăng nhập ứng dụng Kê Giờ của Thầy/Cô theo yêu cầu:</p>' +
       '<div style="background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px; text-align: center; border-radius: 10px; margin: 20px 0;">' +
-      '<p style="margin: 0 0 6px; font-size: 13px; color: #6b7280;">Mã giáo viên: <strong>' + (teacher.email || teacher.teacherCode) + '</strong></p>' +
+      '<p style="margin: 0 0 6px; font-size: 13px; color: #6b7280;">Mã giáo viên: <strong>' + (teacher.loginCode || teacher.teacherCode) + '</strong></p>' +
       '<p style="margin: 0; font-size: 13px; color: #6b7280;">Mật khẩu hiện tại của Thầy/Cô là:</p>' +
       '<div style="margin: 8px 0 0; color: #b91c1c; font-size: 34px; font-weight: 800; letter-spacing: 6px;">' + currentPassword + '</div>' +
       '</div>' +
@@ -434,7 +436,7 @@ function sendCurrentPassword_(payload) {
       '</div>';
 
     MailApp.sendEmail({
-      to: sendTo,
+      to: targetEmail,
       subject: subject,
       body: body,
       htmlBody: htmlBody
@@ -442,10 +444,11 @@ function sendCurrentPassword_(payload) {
 
     return {
       ok: true,
-      message: "Đã gửi mật khẩu về email " + sendTo + ". Vui lòng kiểm tra hộp thư!"
+      email: targetEmail,
+      message: "Bạn hãy vào mail của bạn : [" + targetEmail + "] để lấy mật khẩu. Hoặc liên hệ admin trường"
     };
   } catch (err) {
-    throw new Error("Không gửi được email: " + err.message + ". Vui lòng kiểm tra lại quyền gửi mail của Apps Script.");
+    throw new Error("Lỗi khi gửi email: " + err.message + ". Hoặc liên hệ admin trường");
   }
 }
 
