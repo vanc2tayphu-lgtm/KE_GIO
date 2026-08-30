@@ -754,10 +754,10 @@ button.secondary:hover {
 }
 
 .allowance-no { width: 5%; }
-.allowance-duty { width: 42%; }
-.allowance-from, .allowance-to { width: 12%; }
-.allowance-periods { width: 9%; }
-.allowance-note { width: 20%; }
+.allowance-duty { width: 26%; }
+.allowance-from, .allowance-to { width: 17%; }
+.allowance-periods { width: 11%; }
+.allowance-note { width: 24%; }
 
 .allowance-table th,
 .allowance-table td {
