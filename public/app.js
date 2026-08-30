@@ -334,24 +334,52 @@ function defaultEntries() {
 
 function loadCurrentRecord() {
   const saved = localStorage.getItem(storageKey());
+  const expectedEntries = defaultEntries();
+
   if (saved) {
-    const savedState = JSON.parse(saved);
-    const savedProfile = savedState.profile || {};
-    state.entries = savedState.entries || defaultEntries();
-    state.allowances = savedState.allowances || [];
-    state.timetable = savedState.timetable || JSON.parse(JSON.stringify(defaultTimetable));
-    state.profile = {
-      ...state.profile,
-      rankCode: savedProfile.rankCode || state.profile.rankCode,
-      salaryLevel: savedProfile.salaryLevel || state.profile.salaryLevel,
-      salaryCoeff: savedProfile.salaryCoeff || state.profile.salaryCoeff,
-      positionAllowance: savedProfile.positionAllowance || state.profile.positionAllowance,
-      weeklyNorm: savedProfile.weeklyNorm ?? state.profile.weeklyNorm,
-      assignment: savedProfile.assignment || state.profile.assignment
-    };
-    return;
+    try {
+      const savedState = JSON.parse(saved);
+      const savedProfile = savedState.profile || {};
+
+      // Nếu savedState.entries rỗng (0 tuần do lỗi cache cũ) -> nạp lại defaultEntries()
+      if (!savedState.entries || !Array.isArray(savedState.entries) || savedState.entries.length === 0) {
+        state.entries = expectedEntries;
+      } else {
+        // Tự động map lại các tuần khớp chính xác với khung tuần của tháng
+        state.entries = expectedEntries.map((defEntry, idx) => {
+          const matched = savedState.entries.find((e) => e.start === defEntry.start || (e.n && e.n === defEntry.n)) || savedState.entries[idx];
+          if (matched) {
+            return {
+              ...defEntry,
+              regular: matched.regular !== undefined && matched.regular !== "" ? matched.regular : defEntry.regular,
+              extra: matched.extra !== undefined && matched.extra !== "" ? matched.extra : defEntry.extra,
+              reduction: matched.reduction !== undefined && matched.reduction !== "" ? matched.reduction : defEntry.reduction,
+              content: matched.content !== undefined ? matched.content : defEntry.content,
+              status: matched.status !== undefined ? matched.status : defEntry.status
+            };
+          }
+          return defEntry;
+        });
+      }
+
+      state.allowances = savedState.allowances || [];
+      state.timetable = savedState.timetable || JSON.parse(JSON.stringify(defaultTimetable));
+      state.profile = {
+        ...state.profile,
+        rankCode: savedProfile.rankCode || state.profile.rankCode,
+        salaryLevel: savedProfile.salaryLevel || state.profile.salaryLevel,
+        salaryCoeff: savedProfile.salaryCoeff || state.profile.salaryCoeff,
+        positionAllowance: savedProfile.positionAllowance || state.profile.positionAllowance,
+        weeklyNorm: savedProfile.weeklyNorm ?? state.profile.weeklyNorm,
+        assignment: savedProfile.assignment || state.profile.assignment
+      };
+      return;
+    } catch (e) {
+      console.error("Error loading record:", e);
+    }
   }
-  state.entries = defaultEntries();
+
+  state.entries = expectedEntries;
   state.allowances = [];
   state.timetable = JSON.parse(JSON.stringify(defaultTimetable));
 }
