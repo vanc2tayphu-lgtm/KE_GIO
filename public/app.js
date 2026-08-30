@@ -1200,6 +1200,11 @@ function renderPreview() {
   const signatureText = signatureResultText(totals.diff);
   const allowances = [...state.allowances, {}, {}, {}].slice(0, 3);
 
+  // Lấy tổng số tiết thực dạy (dạy thường xuyên, không tính kiêm nhiệm) của tuần cuối trong tháng
+  const activeTeachingRows = rows.filter((r) => r.status === "teaching");
+  const lastTeachingRow = activeTeachingRows.length > 0 ? activeTeachingRows[activeTeachingRows.length - 1] : (rows[rows.length - 1] || {});
+  const lastWeekRegularTeaching = numberValue(lastTeachingRow.regular || 0);
+
   els.printArea.innerHTML = `
     <div class="print-page page-one">
       <div class="mau-header">
@@ -1222,7 +1227,7 @@ function renderPreview() {
         <span class="meta-teacher-label">Họ tên giáo viên :</span><strong class="meta-teacher-name">${escapeHtml(state.profile.name)}</strong>
         <span class="meta-subject-label">Môn :</span><strong class="meta-subject-name">${escapeHtml(state.profile.subject)}</strong>
         <span class="meta-assignment-label">Phân công lớp dạy (cột 3) :</span><span class="meta-assignment-value">${escapeHtml(state.profile.assignment)}</span>
-        <span class="meta-total-label">Tổng số tiết dạy :</span><span class="meta-total-value">${formatNumber(calculateTimetableTotals().grandTotal || numberValue(state.profile.weeklyNorm))}</span>
+        <span class="meta-total-label">Tổng số tiết dạy :</span><span class="meta-total-value">${formatNumber(lastWeekRegularTeaching)}</span>
       </div>
 
       <div class="mau-line">Kiêm nhiệm : (cột 7)</div>
@@ -1776,10 +1781,15 @@ function worksheetXml() {
   set("D6", state.profile.name, 6);
   set("J6", "Môn :", 5);
   set("K6", state.profile.subject, 6);
+  // Lấy tổng số tiết thực dạy (dạy thường xuyên, không tính kiêm nhiệm) của tuần cuối trong tháng
+  const activeTeachingRows = rows.filter((r) => r.status === "teaching");
+  const lastTeachingRow = activeTeachingRows.length > 0 ? activeTeachingRows[activeTeachingRows.length - 1] : (activeRows[activeRows.length - 1] || {});
+  const lastWeekRegularTeaching = numberValue(lastTeachingRow.regular || 0);
+
   set("A7", "Phân công lớp dạy (cột 3) :", 5);
   set("E7", state.profile.assignment, 5);
   set("L7", "Tổng số tiết dạy :", 5);
-  setN("N7", activeRows[0]?.regular || 0, 5);
+  setN("N7", lastWeekRegularTeaching, 5);
   set("A8", "Kiêm nhiệm :  (cột 7)", 5);
 
   set("B9", "TT", 7);

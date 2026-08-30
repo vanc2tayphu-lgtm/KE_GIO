@@ -1,4 +1,4 @@
-const CACHE_NAME = "ke-gio-pwa-v1";
+const CACHE_NAME = "ke-gio-pwa-v2-last-week-teaching-norm";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
