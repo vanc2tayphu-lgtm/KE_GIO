@@ -1155,10 +1155,10 @@ function renderPreview() {
       </table>
 
       <div class="mau-rank">
-        <span>Mã ngạch :</span><span>${escapeHtml(state.profile.rankCode)}</span>
-        <span>Bậc :</span><span>${escapeHtml(state.profile.salaryLevel)}</span>
-        <span>HSL-cơ bản :</span><span>${escapeHtml(state.profile.salaryCoeff)}</span>
-        <span>Phụ cấp chức vụ :</span><span>${escapeHtml(state.profile.positionAllowance)}</span>
+        <div><span>Mã ngạch:</span> <strong>${escapeHtml(state.profile.rankCode)}</strong></div>
+        <div><span>Bậc:</span> <strong>${escapeHtml(state.profile.salaryLevel)}</strong></div>
+        <div><span>HSL-cơ bản:</span> <strong>${escapeHtml(state.profile.salaryCoeff)}</strong></div>
+        <div><span>Phụ cấp chức vụ:</span> <strong>${escapeHtml(state.profile.positionAllowance)}</strong></div>
       </div>
       <div class="mau-line">Qui định : <strong>${formatNumber(numberValue(state.profile.weeklyNorm))}</strong>&nbsp; tiết/ tuần</div>
 

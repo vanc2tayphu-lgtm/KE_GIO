@@ -753,10 +753,10 @@ button.secondary:hover {
   width: 100%;
 }
 
-.allowance-no { width: 6%; }
-.allowance-duty { width: 34%; }
-.allowance-from, .allowance-to { width: 15%; }
-.allowance-periods { width: 10%; }
+.allowance-no { width: 5%; }
+.allowance-duty { width: 42%; }
+.allowance-from, .allowance-to { width: 12%; }
+.allowance-periods { width: 9%; }
 .allowance-note { width: 20%; }
 
 .allowance-table th,
@@ -768,7 +768,7 @@ button.secondary:hover {
 }
 
 .allowance-table th:nth-child(1) {
-  width: 36px;
+  width: 32px;
 }
 
 .mau-rank {
@@ -783,7 +783,7 @@ button.secondary:hover {
 
 .mau-rank > div {
   display: inline-flex;
-  gap: 4px;
+  gap: 5px;
   align-items: center;
   white-space: nowrap;
 }
