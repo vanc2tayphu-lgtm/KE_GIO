@@ -622,11 +622,19 @@ button.secondary:hover {
 .entry-preview-style-table .col-surplus {
   font-weight: 800;
   color: #15803d;
+  width: 42px;
+  min-width: 42px;
+  max-width: 42px;
+  padding: 4px 2px;
 }
 
 .entry-preview-style-table .col-shortage {
   font-weight: 800;
   color: #b91c1c;
+  width: 42px;
+  min-width: 42px;
+  max-width: 42px;
+  padding: 4px 2px;
 }
 
 .entry-preview-style-table tfoot td {
