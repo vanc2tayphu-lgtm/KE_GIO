@@ -790,35 +790,116 @@ async function loginTeacher() {
   }
 }
 
-async function requestLoginSecurityCode() {
+
+function openForgotPasswordModal() {
+  const overlay = document.querySelector("#forgotPasswordOverlay");
+  const loginEmail = document.querySelector("#loginEmail")?.value.trim();
+  const teacherInput = document.querySelector("#forgotTeacherCodeInput");
+  const emailInput = document.querySelector("#forgotEmailInput");
+  const status = document.querySelector("#forgotPasswordStatus");
+
+  if (teacherInput && loginEmail) {
+    teacherInput.value = loginEmail;
+  }
+  if (emailInput) {
+    emailInput.value = loginEmail && loginEmail.includes("@") ? loginEmail : "";
+  }
+  if (status) {
+    status.textContent = "";
+    status.className = "sync-status";
+  }
+  if (overlay) overlay.classList.remove("hidden");
+}
+
+function closeForgotPasswordModal() {
+  const overlay = document.querySelector("#forgotPasswordOverlay");
+  if (overlay) overlay.classList.add("hidden");
+}
+
+async function sendForgotPasswordHandler() {
   const url = googleScriptUrl();
-  const email = els.loginEmail.value.trim();
   saveGoogleSheetUrl();
+  const teacherCode = document.querySelector("#forgotTeacherCodeInput")?.value.trim();
+  const targetEmail = document.querySelector("#forgotEmailInput")?.value.trim();
+  const status = document.querySelector("#forgotPasswordStatus");
+  const submitBtn = document.querySelector("#submitForgotPasswordBtn");
+
   if (!url) {
-    setSyncStatus("Chưa có Apps Script URL để gửi mật khẩu mới.", "error");
-    return;
-  }
-  if (!email) {
-    setSyncStatus("Nhập mã giáo viên ở ô Mã giáo viên, rồi bấm Quên mật khẩu để lấy mật khẩu mới.", "error");
-    return;
-  }
-  setSyncStatus(`Đang yêu cầu mã mới cho ${email}...`);
-  try {
-    const result = await requestGoogleScript(url, { action: "resetCode", email });
-    if (result.ok) {
-      localStorage.removeItem(loginSessionKey());
-      els.loginCode.value = "";
-      showLoggedOutTeacherSelect();
-      renderAll();
-      setSyncStatus(result.email && result.email.includes("@")
-        ? `Đã gửi mã mới về mail ${result.email}.`
-        : (result.newCode ? `Đã tạo mã mới: ${result.newCode}.` : "Đã tạo mã mới thành công."), "success");
-    } else {
-      setSyncStatus(friendlyGoogleError(result.error) || "Không gửi được mã mới.", "error");
+    if (status) {
+      status.textContent = "Chưa cấu hình Google Apps Script URL.";
+      status.className = "sync-status error";
     }
-  } catch (error) {
-    setSyncStatus("Không gửi được mã mới. Kiểm tra lại Apps Script URL.", "error");
+    return;
   }
+
+  if (!teacherCode) {
+    if (status) {
+      status.textContent = "Vui lòng nhập mã giáo viên.";
+      status.className = "sync-status error";
+    }
+    return;
+  }
+
+  if (!targetEmail || !targetEmail.includes("@")) {
+    if (status) {
+      status.textContent = "Vui lòng nhập địa chỉ email hợp lệ.";
+      status.className = "sync-status error";
+    }
+    return;
+  }
+
+  if (status) {
+    status.textContent = "Đang kiểm tra và gửi mật khẩu về email...";
+    status.className = "sync-status";
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.classList.add("is-loading");
+    const label = submitBtn.querySelector(".button-label");
+    if (label) label.textContent = "Đang gửi...";
+  }
+
+  try {
+    const result = await requestGoogleScript(url, {
+      action: "forgotPassword",
+      teacherCode: teacherCode,
+      email: teacherCode,
+      targetEmail: targetEmail
+    });
+
+    if (result.ok) {
+      if (status) {
+        status.textContent = result.message || ("Đã gửi mật khẩu về email " + targetEmail + " thành công!");
+        status.className = "sync-status success";
+      }
+      setTimeout(() => {
+        closeForgotPasswordModal();
+        alert(result.message || ("Đã gửi mật khẩu về email " + targetEmail + ". Vui lòng kiểm tra hộp thư!"));
+      }, 1500);
+    } else {
+      if (status) {
+        status.textContent = friendlyGoogleError(result.error) || "Không gửi được mật khẩu.";
+        status.className = "sync-status error";
+      }
+    }
+  } catch (err) {
+    if (status) {
+      status.textContent = "Lỗi kết nối máy chủ: " + err.message;
+      status.className = "sync-status error";
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("is-loading");
+      const label = submitBtn.querySelector(".button-label");
+      if (label) label.textContent = "Gửi mật khẩu";
+    }
+  }
+}
+
+async function requestLoginSecurityCode() {
+  openForgotPasswordModal();
 }
 
 function numberValue(value) {
@@ -2372,3 +2453,7 @@ init();
 window.openChangePasswordModal = openChangePasswordModal;
 window.closeChangePasswordModal = closeChangePasswordModal;
 window.changePasswordHandler = changePasswordHandler;
+
+window.openForgotPasswordModal = openForgotPasswordModal;
+window.closeForgotPasswordModal = closeForgotPasswordModal;
+window.sendForgotPasswordHandler = sendForgotPasswordHandler;

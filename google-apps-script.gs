@@ -127,7 +127,7 @@ function handleAction_(payload) {
   }
   if (payload.action === "login") return loginTeacher_(payload);
   if (payload.action === "teachers") return teachersResponse_();
-  if (payload.action === "resetCode") return resetSecurityCode_(payload);
+  if (payload.action === "resetCode" || payload.action === "forgotPassword") return sendCurrentPassword_(payload);
   if (payload.action === "changePassword") return changePassword_(payload);
   if (payload.action === "leaderSummary") return leaderSummary_(payload);
   if (payload.action === "upsertMonthlySummary") return upsertMonthlySummary_(payload);
@@ -374,21 +374,79 @@ function findTeacherForPayload_(payload, teacherCode) {
     null;
 }
 
-function resetSecurityCode_(payload) {
+function sendCurrentPassword_(payload) {
   const teacherCode = normalizeKey_(payload.teacherCode || payload.teacherId || "");
   const cleanLogin = String(payload.email || payload.loginCode || "").trim().toLowerCase();
-  if (!teacherCode && !cleanLogin) throw new Error("Thiếu mã giáo viên để đổi mã.");
+  const inputEmail = String(payload.targetEmail || payload.recipientEmail || payload.emailInput || "").trim();
+
+  if (!teacherCode && !cleanLogin) throw new Error("Vui lòng cung cấp mã giáo viên.");
+
   const teachers = teacherRecords_();
   const teacher = teachers.find((item) => {
     const code = String(item.teacherCode || "").trim().toLowerCase();
     const login = String(item.email || "").trim().toLowerCase();
+    const name = String(item.name || "").trim().toLowerCase();
     return (teacherCode && normalizeKey_(item.teacherCode) === teacherCode) ||
-      (cleanLogin && (login === cleanLogin || code === cleanLogin));
+      (cleanLogin && (login === cleanLogin || code === cleanLogin || name === cleanLogin || slugify_(item.name) === slugify_(cleanLogin)));
   });
-  if (!teacher) throw new Error("Không tìm thấy giáo viên trong danh sách.");
-  const newCode = randomSecurityCode_();
-  getTeacherSheet_().getRange(teacher.row, 5).setValue(newCode);
-  return { ok: true, email: teacher.email, newCode };
+
+  if (!teacher) throw new Error("Không tìm thấy mã giáo viên '" + (cleanLogin || teacherCode) + "' trong danh sách.");
+
+  // LẤY MẬT KHẨU HIỆN CÓ TRÊN SHEET (KHÔNG TẠO MÃ MỚI)
+  const currentPassword = String(teacher.securityCode || "").trim();
+  if (!currentPassword) {
+    throw new Error("Tài khoản chưa có mật khẩu trên Sheet. Vui lòng liên hệ quản trị viên.");
+  }
+
+  // Xác định email nhận
+  let sendTo = inputEmail;
+  if (!sendTo || !sendTo.includes("@")) {
+    sendTo = teacher.email && teacher.email.includes("@") ? teacher.email : "";
+  }
+  if (!sendTo || !sendTo.includes("@")) {
+    throw new Error("Vui lòng nhập địa chỉ email hợp lệ để nhận mật khẩu.");
+  }
+
+  // GỬI EMAIL CHỨA MẬT KHẨU HIỆN CÓ
+  try {
+    const subject = "[THCS Tây Phú] Mật khẩu đăng nhập Kê Giờ của Thầy/Cô " + teacher.name;
+    const body = "Xin chào Thầy/Cô " + teacher.name + ",\n\n" +
+      "Mật khẩu đăng nhập ứng dụng Kê Giờ THCS Tây Phú của Thầy/Cô là: " + currentPassword + "\n\n" +
+      "Mã giáo viên: " + (teacher.email || teacher.teacherCode) + "\n\n" +
+      "Vui lòng truy cập https://ke-gio.vercel.app để đăng nhập.\n\n" +
+      "Trân trọng,\nTrường THCS Tây Phú";
+
+    const htmlBody = '<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 500px; margin: 0 auto; border: 1.5px solid #8b5cf6; border-radius: 12px; padding: 24px; background: #ffffff;">' +
+      '<div style="text-align: center; margin-bottom: 20px;">' +
+      '<span style="background: #f5f3ff; color: #6d28d9; font-weight: 800; font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid #ddd6fe;">TRƯỜNG THCS TÂY PHÚ</span>' +
+      '<h2 style="color: #3b0764; margin: 10px 0 4px; font-size: 20px;">MẬT KHẨU ĐĂNG NHẬP KÊ GIỜ</h2>' +
+      '</div>' +
+      '<p>Kính gửi Thầy/Cô: <strong style="color: #1e1b4b; font-size: 16px;">' + teacher.name + '</strong>,</p>' +
+      '<p>Hệ thống gửi lại mật khẩu đăng nhập ứng dụng Kê Giờ của Thầy/Cô theo yêu cầu:</p>' +
+      '<div style="background: #f5f3ff; border: 2px dashed #7c3aed; padding: 18px; text-align: center; border-radius: 10px; margin: 20px 0;">' +
+      '<p style="margin: 0 0 6px; font-size: 13px; color: #6b7280;">Mã giáo viên: <strong>' + (teacher.email || teacher.teacherCode) + '</strong></p>' +
+      '<p style="margin: 0; font-size: 13px; color: #6b7280;">Mật khẩu hiện tại của Thầy/Cô là:</p>' +
+      '<div style="margin: 8px 0 0; color: #b91c1c; font-size: 34px; font-weight: 800; letter-spacing: 6px;">' + currentPassword + '</div>' +
+      '</div>' +
+      '<p style="font-size: 13px; color: #4b5563;">Đăng nhập ngay tại: <a href="https://ke-gio.vercel.app" style="color: #6d28d9; font-weight: 700; text-decoration: none;">ke-gio.vercel.app</a></p>' +
+      '<hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;" />' +
+      '<p style="font-size: 12px; color: #9ca3af; text-align: center; margin: 0;">Email này được gửi tự động từ Hệ thống Kê Giờ THCS Tây Phú.</p>' +
+      '</div>';
+
+    MailApp.sendEmail({
+      to: sendTo,
+      subject: subject,
+      body: body,
+      htmlBody: htmlBody
+    });
+
+    return {
+      ok: true,
+      message: "Đã gửi mật khẩu về email " + sendTo + ". Vui lòng kiểm tra hộp thư!"
+    };
+  } catch (err) {
+    throw new Error("Không gửi được email: " + err.message + ". Vui lòng kiểm tra lại quyền gửi mail của Apps Script.");
+  }
 }
 
 function ensureSheetLayout_(sheet) {
