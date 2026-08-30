@@ -124,6 +124,9 @@
             <button id="entryTabBtn" class="tab-button active" type="button" role="tab" aria-selected="true" data-tab="entry">
               Nhập tiết theo tuần
             </button>
+            <button id="timetableTabBtn" class="tab-button" type="button" role="tab" aria-selected="false" data-tab="timetable">
+              Thời khóa biểu
+            </button>
             <button id="previewTabBtn" class="tab-button" type="button" role="tab" aria-selected="false" data-tab="preview">
               Xem trước bảng kê A4
             </button>
@@ -190,6 +193,47 @@
                 <button id="teacherSummaryBtn" class="secondary" type="button">Xuất bảng tổng hợp cá nhân</button>
                 <button id="leaderSummaryBtn" class="secondary" type="button">Xuất tổng hợp lãnh đạo</button>
               </div>
+            </div>
+          </section>
+
+          
+          <!-- TAB NHẬP THỜI KHÓA BIỂU -->
+          <section id="timetableTab" class="card tab-panel hidden" data-tab-panel="timetable">
+            <div class="section-heading">
+              <div>
+                <h2>Thời khóa biểu giảng dạy</h2>
+                <p>Nhập lớp/môn dạy vào từng tiết để app tự động tổng hợp số tiết và điền vào trang 2 bảng in A4.</p>
+              </div>
+              <span id="timetableTotalBadge" class="badge">Tổng: 0 tiết/tuần</span>
+            </div>
+
+            <div class="table-wrap">
+              <table class="mau-table timetable-input-table">
+                <thead>
+                  <tr>
+                    <th colspan="7" class="bg-morning">BUỔI SÁNG</th>
+                    <th colspan="7" class="bg-afternoon">BUỔI CHIỀU</th>
+                  </tr>
+                  <tr>
+                    <th style="width: 70px;">Thứ</th>
+                    <th style="width: 50px;">Tiết 1</th>
+                    <th style="width: 50px;">Tiết 2</th>
+                    <th style="width: 50px;">Tiết 3</th>
+                    <th style="width: 50px;">Tiết 4</th>
+                    <th style="width: 50px;">Tiết 5</th>
+                    <th style="width: 50px; font-weight: 800;">Cộng</th>
+                    <th style="width: 70px;">Thứ</th>
+                    <th style="width: 50px;">Tiết 1</th>
+                    <th style="width: 50px;">Tiết 2</th>
+                    <th style="width: 50px;">Tiết 3</th>
+                    <th style="width: 50px;">Tiết 4</th>
+                    <th style="width: 50px;">Tiết 5</th>
+                    <th style="width: 50px; font-weight: 800;">Cộng</th>
+                  </tr>
+                </thead>
+                <tbody id="timetableRows"></tbody>
+                <tfoot id="timetableFoot"></tfoot>
+              </table>
             </div>
           </section>
 

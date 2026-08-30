@@ -1222,3 +1222,64 @@ button.secondary:hover {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Timetable Input Table Styles */
+.timetable-input-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.timetable-input-table th,
+.timetable-input-table td {
+  border: 1.4px solid #000000;
+  padding: 4px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.timetable-input-table th.bg-morning {
+  background: #ede9fe;
+  color: #3b0764;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.timetable-input-table th.bg-afternoon {
+  background: #fae8ff;
+  color: #701a75;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.timetable-input-table input {
+  width: 100%;
+  padding: 6px 2px;
+  border: 1px solid #c4b5fd;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 700;
+  background: #ffffff;
+}
+
+.timetable-input-table input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2);
+}
+
+.timetable-col-count {
+  font-weight: 800;
+  color: var(--accent-dark);
+  background: #fdfcff;
+}
+
+.timetable-input-table tfoot td {
+  font-weight: 800;
+  background: #ede9fe;
+  height: 38px;
+  font-size: 14px;
+  border-top: 2px solid #000;
+  border-bottom: 2px solid #000;
+}

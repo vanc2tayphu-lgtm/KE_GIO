@@ -218,7 +218,18 @@ const els = {
   mobileActionLeaderSummary: document.querySelector("#mobileActionLeaderSummary")
 };
 
+
+const defaultTimetable = [
+  { day: "Thứ hai", morning: ["", "", "", "", ""], afternoon: ["", "", "", "", ""] },
+  { day: "Thứ ba", morning: ["", "", "", "", ""], afternoon: ["", "", "", "", ""] },
+  { day: "Thứ tư", morning: ["", "", "", "", ""], afternoon: ["", "", "", "", ""] },
+  { day: "Thứ năm", morning: ["", "", "", "", ""], afternoon: ["", "", "", "", ""] },
+  { day: "Thứ sáu", morning: ["", "", "", "", ""], afternoon: ["", "", "", "", ""] },
+  { day: "Thứ bảy", morning: ["", "", "", "", ""], afternoon: ["", "", "", "", ""] }
+];
+
 let state = {
+  timetable: JSON.parse(JSON.stringify(defaultTimetable)),
   month: "2026-09",
   teacherId: teachers[0].id,
   profile: { ...teachers[0] },
@@ -315,6 +326,7 @@ function loadCurrentRecord() {
     const savedProfile = savedState.profile || {};
     state.entries = savedState.entries || defaultEntries();
     state.allowances = savedState.allowances || [];
+    state.timetable = savedState.timetable || JSON.parse(JSON.stringify(defaultTimetable));
     state.profile = {
       ...state.profile,
       rankCode: savedProfile.rankCode || state.profile.rankCode,
@@ -328,6 +340,7 @@ function loadCurrentRecord() {
   }
   state.entries = defaultEntries();
   state.allowances = [];
+  state.timetable = JSON.parse(JSON.stringify(defaultTimetable));
 }
 
 function saveCurrentRecord() {
@@ -1103,7 +1116,7 @@ function renderPreview() {
         <span class="meta-teacher-label">Họ tên giáo viên :</span><strong class="meta-teacher-name">${escapeHtml(state.profile.name)}</strong>
         <span class="meta-subject-label">Môn :</span><strong class="meta-subject-name">${escapeHtml(state.profile.subject)}</strong>
         <span class="meta-assignment-label">Phân công lớp dạy (cột 3) :</span><span class="meta-assignment-value">${escapeHtml(state.profile.assignment)}</span>
-        <span class="meta-total-label">Tổng số tiết dạy :</span><span class="meta-total-value">${formatNumber(rows[0]?.regular || 0)}</span>
+        <span class="meta-total-label">Tổng số tiết dạy :</span><span class="meta-total-value">${formatNumber(calculateTimetableTotals().grandTotal || numberValue(state.profile.weeklyNorm))}</span>
       </div>
 
       <div class="mau-line">Kiêm nhiệm : (cột 7)</div>
@@ -1270,14 +1283,145 @@ function reportRowHtml(row) {
   `;
 }
 
+
+function countPeriodValue(val) {
+  if (!val) return 0;
+  const num = Number(val);
+  if (!isNaN(num) && num > 0) return num;
+  return String(val).trim().length > 0 ? 1 : 0;
+}
+
+function calculateTimetableTotals() {
+  if (!state.timetable || !Array.isArray(state.timetable)) {
+    state.timetable = JSON.parse(JSON.stringify(defaultTimetable));
+  }
+  let morningTotal = 0;
+  let afternoonTotal = 0;
+
+  const rows = state.timetable.map((row) => {
+    const morningCount = (row.morning || []).reduce((sum, v) => sum + countPeriodValue(v), 0);
+    const afternoonCount = (row.afternoon || []).reduce((sum, v) => sum + countPeriodValue(v), 0);
+    morningTotal += morningCount;
+    afternoonTotal += afternoonCount;
+    return {
+      day: row.day,
+      morning: row.morning || ["", "", "", "", ""],
+      afternoon: row.afternoon || ["", "", "", "", ""],
+      morningCount,
+      afternoonCount,
+      dayTotal: morningCount + afternoonCount
+    };
+  });
+
+  return {
+    rows,
+    morningTotal,
+    afternoonTotal,
+    grandTotal: morningTotal + afternoonTotal
+  };
+}
+
+function renderTimetable() {
+  const tbody = document.querySelector("#timetableRows");
+  const tfoot = document.querySelector("#timetableFoot");
+  const badge = document.querySelector("#timetableTotalBadge");
+  if (!tbody) return;
+
+  const { rows, morningTotal, afternoonTotal, grandTotal } = calculateTimetableTotals();
+  if (badge) badge.textContent = `Tổng: ${grandTotal} tiết/tuần`;
+
+  tbody.innerHTML = "";
+  rows.forEach((row, dayIndex) => {
+    const tr = document.createElement("tr");
+
+    let morningInputs = "";
+    for (let p = 0; p < 5; p++) {
+      morningInputs += `<td><input data-day="${dayIndex}" data-session="morning" data-period="${p}" value="${escapeAttr(row.morning[p] || "")}" placeholder="-" /></td>`;
+    }
+
+    let afternoonInputs = "";
+    for (let p = 0; p < 5; p++) {
+      afternoonInputs += `<td><input data-day="${dayIndex}" data-session="afternoon" data-period="${p}" value="${escapeAttr(row.afternoon[p] || "")}" placeholder="-" /></td>`;
+    }
+
+    tr.innerHTML = `
+      <td style="font-weight: 700; background: #faf5ff;">${row.day}</td>
+      ${morningInputs}
+      <td class="timetable-col-count">${row.morningCount || ""}</td>
+      <td style="font-weight: 700; background: #fdf4ff;">${row.day}</td>
+      ${afternoonInputs}
+      <td class="timetable-col-count">${row.afternoonCount || ""}</td>
+    `;
+
+    tr.querySelectorAll("input").forEach((input) => {
+      input.addEventListener("input", () => {
+        const d = Number(input.dataset.day);
+        const s = input.dataset.session;
+        const p = Number(input.dataset.period);
+        state.timetable[d][s][p] = input.value;
+        const currentTotals = calculateTimetableTotals();
+        if (badge) badge.textContent = `Tổng: ${currentTotals.grandTotal} tiết/tuần`;
+        renderTimetableCountsOnly();
+        renderPreview();
+      });
+      input.addEventListener("change", () => {
+        saveCurrentRecord();
+        renderAll();
+      });
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: right; font-weight: 800;">Tổng sáng:</td>
+        <td class="timetable-col-count">${morningTotal || "0"}</td>
+        <td colspan="6" style="text-align: right; font-weight: 800;">Tổng chiều:</td>
+        <td class="timetable-col-count">${afternoonTotal || "0"}</td>
+      </tr>
+      <tr>
+        <td colspan="14" style="text-align: center; font-weight: 800; font-size: 15px; color: var(--accent-dark); background: #f5f3ff;">
+          TỔNG CỘNG SỐ TIẾT DẠY TRONG TUẦN: ${grandTotal} TIẾT
+        </td>
+      </tr>
+    `;
+  }
+}
+
+function renderTimetableCountsOnly() {
+  const { rows, morningTotal, afternoonTotal, grandTotal } = calculateTimetableTotals();
+  const trs = document.querySelectorAll("#timetableRows tr");
+  trs.forEach((tr, i) => {
+    if (rows[i]) {
+      const counts = tr.querySelectorAll(".timetable-col-count");
+      if (counts[0]) counts[0].textContent = rows[i].morningCount || "";
+      if (counts[1]) counts[1].textContent = rows[i].afternoonCount || "";
+    }
+  });
+}
+
 function scheduleTableHtml() {
-  const days = ["Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
-  const dayRows = days
+  const { rows } = calculateTimetableTotals();
+  const dayRows = rows
     .map(
-      (day) => `
+      (row) => `
         <tr>
-          <td>${day}</td><td></td><td></td><td></td><td></td><td></td><td></td>
-          <td>${day}</td><td></td><td></td><td></td><td></td><td></td><td></td>
+          <td>${row.day}</td>
+          <td>${escapeHtml(row.morning[0] || "")}</td>
+          <td>${escapeHtml(row.morning[1] || "")}</td>
+          <td>${escapeHtml(row.morning[2] || "")}</td>
+          <td>${escapeHtml(row.morning[3] || "")}</td>
+          <td>${escapeHtml(row.morning[4] || "")}</td>
+          <td>${row.morningCount ? formatNumber(row.morningCount) : ""}</td>
+          <td>${row.day}</td>
+          <td>${escapeHtml(row.afternoon[0] || "")}</td>
+          <td>${escapeHtml(row.afternoon[1] || "")}</td>
+          <td>${escapeHtml(row.afternoon[2] || "")}</td>
+          <td>${escapeHtml(row.afternoon[3] || "")}</td>
+          <td>${escapeHtml(row.afternoon[4] || "")}</td>
+          <td>${row.afternoonCount ? formatNumber(row.afternoonCount) : ""}</td>
         </tr>`
     )
     .join("");
@@ -1301,6 +1445,7 @@ function renderAll() {
   setBrandTeacherName();
   renderAllowances();
   renderWeeks();
+  renderTimetable();
   renderPreview();
 }
 
