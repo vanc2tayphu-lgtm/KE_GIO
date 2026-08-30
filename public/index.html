@@ -167,31 +167,31 @@
                 <tfoot id="weekTotalsFoot"></tfoot>
               </table>
             </div>
+
+            <!-- CHỮ KÝ DUYỆT & CÁC NÚT HÀNH ĐỘNG (NẰM DƯỚI BẢNG NHẬP TIẾT) -->
+            <div class="content-bottom-panels">
+              <div class="panel">
+                <h2>Chữ ký duyệt</h2>
+                <label>
+                  Chức danh duyệt
+                  <select id="principalTitle">
+                    <option value="PHÓ HIỆU TRƯỞNG">PHÓ HIỆU TRƯỞNG</option>
+                    <option value="HIỆU TRƯỞNG">HIỆU TRƯỞNG</option>
+                  </select>
+                </label>
+                <label>Tên người duyệt <input id="principalName" /></label>
+                <label>Tên tổ trưởng <input id="teamLeaderName" /></label>
+              </div>
+
+              <div class="actions content-actions">
+                <button id="saveBtn" class="primary-btn" type="button">Lưu bảng kê tháng này</button>
+                <button id="printBtn" class="secondary" type="button">In / Xuất PDF</button>
+                <button id="exportBtn" class="secondary" type="button">Xuất Excel (.xlsx)</button>
+                <button id="teacherSummaryBtn" class="secondary" type="button">Xuất bảng tổng hợp cá nhân</button>
+                <button id="leaderSummaryBtn" class="secondary" type="button">Xuất tổng hợp lãnh đạo</button>
+              </div>
+            </div>
           </section>
-
-          <!-- CHỮ KÝ DUYỆT & CÁC NÚT HÀNH ĐỘNG (BÊN PHẢI) -->
-          <div class="content-bottom-panels">
-            <div class="panel">
-              <h2>Chữ ký duyệt</h2>
-              <label>
-                Chức danh duyệt
-                <select id="principalTitle">
-                  <option value="PHÓ HIỆU TRƯỞNG">PHÓ HIỆU TRƯỞNG</option>
-                  <option value="HIỆU TRƯỞNG">HIỆU TRƯỞNG</option>
-                </select>
-              </label>
-              <label>Tên người duyệt <input id="principalName" /></label>
-              <label>Tên tổ trưởng <input id="teamLeaderName" /></label>
-            </div>
-
-            <div class="actions content-actions">
-              <button id="saveBtn" class="primary-btn" type="button">Lưu bảng kê tháng này</button>
-              <button id="printBtn" class="secondary" type="button">In / Xuất PDF</button>
-              <button id="exportBtn" class="secondary" type="button">Xuất Excel (.xlsx)</button>
-              <button id="teacherSummaryBtn" class="secondary" type="button">Xuất bảng tổng hợp cá nhân</button>
-              <button id="leaderSummaryBtn" class="secondary" type="button">Xuất tổng hợp lãnh đạo</button>
-            </div>
-          </div>
 
           <!-- XEM TRƯỚC BẢNG KÊ A4 -->
           <section class="card print-card tab-panel hidden" id="printArea" data-tab-panel="preview"></section>

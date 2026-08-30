@@ -1028,7 +1028,7 @@ button.secondary:hover {
 @media print {
   @page { size: letter portrait; margin: 0; }
   body { background: white !important; }
-  .sidebar, .app-title-banner, .view-tabs, .actions, #entryTab, .login-overlay, .modal-overlay {
+  .sidebar, .app-title-banner, .view-tabs, .actions, #entryTab, .content-bottom-panels, .login-overlay, .modal-overlay {
     display: none !important;
   }
   .workspace, .content { display: block !important; padding: 0 !important; }
