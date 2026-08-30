@@ -40,10 +40,8 @@ const schoolWeeks = [
   { n: null, start: "2027-05-24", end: "2027-05-30", note: "Tổng kết", holiday: true }
 ];
 
-function getActiveSchoolWeeks() {
-  const selectedYear = (document.querySelector("#schoolYearSelect")?.value || localStorage.getItem("ke-gio:school-year") || "2026-2027").split("-")[0];
-  const startYear = Number(selectedYear) || 2026;
-  const diff = startYear - 2026;
+function getWeeksForYear(startYear) {
+  const diff = (Number(startYear) || 2026) - 2026;
   if (diff === 0) return schoolWeeks;
 
   return schoolWeeks.map((week) => {
@@ -58,6 +56,14 @@ function getActiveSchoolWeeks() {
       end: formatYMD(e)
     };
   });
+}
+
+function getActiveSchoolWeeks() {
+  const [yearStr, mmStr] = (state.month || "2026-09").split("-");
+  const year = Number(yearStr) || 2026;
+  const month = Number(mmStr) || 9;
+  const startYear = month >= 8 ? year : year - 1;
+  return getWeeksForYear(startYear);
 }
 
 
@@ -283,25 +289,32 @@ function loginSessionKey() {
 }
 
 function monthsFromWeeks() {
+  const [yearStr, mmStr] = (state.month || "2026-09").split("-");
+  const year = Number(yearStr) || 2026;
+  const month = Number(mmStr) || 9;
+  const startYear = month >= 8 ? year : year - 1;
+  const weeks = getWeeksForYear(startYear);
+
   const months = new Set();
-  getActiveSchoolWeeks().forEach((week) => {
-    const start = dateOnly(week.start);
-    const end = dateOnly(week.end);
-    const cursor = new Date(start);
-    cursor.setDate(1);
-    while (cursor <= end) {
-      months.add(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`);
-      cursor.setMonth(cursor.getMonth() + 1);
-    }
+  weeks.forEach((week) => {
+    const startYm = week.start.substring(0, 7);
+    const endYm = week.end.substring(0, 7);
+    months.add(startYm);
+    months.add(endYm);
   });
   return [...months].sort();
 }
 
 function weeksForMonth(month) {
   const [year, mm] = month.split("-").map(Number);
-  const monthStart = new Date(year, mm - 1, 1);
-  const monthEnd = new Date(year, mm, 0);
-  return getActiveSchoolWeeks().filter((week) => dateOnly(week.start) <= monthEnd && dateOnly(week.end) >= monthStart);
+  const monthStartStr = `${year}-${String(mm).padStart(2, "0")}-01`;
+  const lastDay = new Date(year, mm, 0).getDate();
+  const monthEndStr = `${year}-${String(mm).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+  const startYear = mm >= 8 ? year : year - 1;
+  const weeks = getWeeksForYear(startYear);
+
+  return weeks.filter((week) => week.start <= monthEndStr && week.end >= monthStartStr);
 }
 
 function defaultEntries() {
