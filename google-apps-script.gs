@@ -87,7 +87,42 @@ const VISIBLE_COLS = 3 + MONTHS.length * 3;
 const TEACHER_KEY_COL = VISIBLE_COLS + 1;
 const UPDATED_AT_COL = VISIBLE_COLS + 2;
 
+
+function taoCotGmail() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(TEACHER_SHEET_NAME);
+  if (!sheet) {
+    sheet = ensureTeacherDirectory_();
+  }
+
+  // Đặt lại đúng tên tiêu đề 6 cột
+  sheet.getRange(1, 1).setValue("Ma GV");
+  sheet.getRange(1, 2).setValue("Ho ten GV");
+  sheet.getRange(1, 3).setValue("Mon");
+  sheet.getRange(1, 4).setValue("Ma dang nhap");
+  sheet.getRange(1, 5).setValue("Ma bao mat");
+  sheet.getRange(1, 6).setValue("Gmail");
+
+  const headerRange = sheet.getRange(1, 1, 1, 6);
+  headerRange
+    .setBackground("#ede9fe")
+    .setFontColor("#3b0764")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
+
+  sheet.setColumnWidth(1, 95);
+  sheet.setColumnWidth(2, 240);
+  sheet.setColumnWidth(3, 180);
+  sheet.setColumnWidth(4, 130);
+  sheet.setColumnWidth(5, 110);
+  sheet.setColumnWidth(6, 240);
+
+  return "ĐÃ TẠO THÀNH CÔNG CỘT F: GMAIL! Bạn hãy điền Gmail của từng giáo viên vào Cột F nhé.";
+}
+
 function setupAuthorization() {
+  taoCotGmail();
   ensureTeacherDirectory_();
   getSummarySheet_();
   return "OK - Đã sẵn sàng";
