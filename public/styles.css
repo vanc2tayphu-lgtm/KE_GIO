@@ -750,14 +750,15 @@ button.secondary:hover {
 .allowance-table {
   border: 2px solid #000;
   margin-left: 0;
-  width: 100%;
+  width: auto;
+  table-layout: fixed;
 }
 
-.allowance-no { width: 6%; }
-.allowance-duty { width: 32%; }
-.allowance-from, .allowance-to { width: 15%; }
-.allowance-periods { width: 10%; }
-.allowance-note { width: 22%; }
+.allowance-no { width: 38px; }
+.allowance-duty { width: 230px; }
+.allowance-from, .allowance-to { width: 88px; }
+.allowance-periods { width: 68px; }
+.allowance-note { width: 140px; }
 
 .allowance-table th,
 .allowance-table td {
@@ -765,10 +766,6 @@ button.secondary:hover {
   font-size: 15px;
   padding: 3px 4px;
   white-space: nowrap;
-}
-
-.allowance-table th:nth-child(1) {
-  width: 32px;
 }
 
 .mau-rank {
