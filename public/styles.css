@@ -551,10 +551,12 @@ button.secondary:hover {
   border: 1.5px solid #000000;
   border-radius: 6px;
   background: #ffffff;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .entry-preview-style-table {
-  width: 100%;
+  width: auto;
   border-collapse: collapse;
   table-layout: fixed;
   background: #ffffff;
