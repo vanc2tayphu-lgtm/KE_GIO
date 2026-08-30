@@ -753,11 +753,11 @@ button.secondary:hover {
   width: 100%;
 }
 
-.allowance-no { width: 5%; }
-.allowance-duty { width: 26%; }
-.allowance-from, .allowance-to { width: 17%; }
-.allowance-periods { width: 11%; }
-.allowance-note { width: 24%; }
+.allowance-no { width: 6%; }
+.allowance-duty { width: 32%; }
+.allowance-from, .allowance-to { width: 15%; }
+.allowance-periods { width: 10%; }
+.allowance-note { width: 22%; }
 
 .allowance-table th,
 .allowance-table td {
