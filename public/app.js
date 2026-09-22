@@ -1415,7 +1415,7 @@ function renderPreview() {
         <strong><em><u>Ghi chú :</u></em></strong>
         <p>- GV phải kê khai đầy đủ các thông tin trong bảng kê, nếu có dạy thay ai hoặc dạy bù phải ghi bên cột đột xuất (cột 4) và ghi đầy đủ thông tin diễn giải (cột 2), Thời khóa biểu phải khoanh tròn tiết dạy thay hoặc dạy bù đó.</p>
         <p>- Tất cả GV đều phải kê khai giờ buổi.</p>
-        <p>- Các chức danh mà giáo viên kiêm nhiệm được giảm định mức tiết dạy hoặc quy đổi thành tiết dạy được quy định tại thông tư 05/2005/TT-BGDĐT, ngày 07/03/2025, phải kèm theo minh chứng (quyết định, chứng từ... hợp pháp). Các chức danh mà giáo viên kiêm nhiệm không được quy</p>
+        <p>- Các chức danh mà giáo viên kiêm nhiệm được giảm định mức tiết dạy hoặc quy đổi thành tiết dạy được quy định tại thông tư 05/2025/TT-BGDĐT, phải kèm theo minh chứng (quyết định, chứng từ... hợp pháp). Các chức danh mà giáo viên kiêm nhiệm không được quy</p>
         <p>- BGH, Tổ trưởng có trách nhiệm kiểm tra việc kê khai của GV.</p>
         <p>- Số tiết thừa phải ghi dấu "+" phía trước, số tiết thiếu phải ghi dấu "-" phía trước.</p>
         <p>- Cột (5) = cột (3) + cột (4); cột (8) = cột (6) - cột (7); cột (9) = cột (5) - cột (8); cột (10) = cột (5) - cột (8).</p>
@@ -1954,7 +1954,7 @@ function worksheetXml() {
   set("A73", "Ghi chú :", 22);
   set("A74", "- GV phải kê khai đầy đủ các thông tin trong bảng kê, nếu có dạy thay ai hoặc dạy bù phải ghi bên cột đột xuất (cột 4) và ghi đầy đủ thông tin diễn giải (cột 2), Thời khóa biểu phải khoanh tròn tiết dạy thay hoặc dạy bù đó.", 23);
   set("A75", "- Tất cả GV đều phải kê khai giờ buổi.", 23);
-  set("A76", "- Các chức danh mà giáo viên kiêm nhiệm được giảm định mức tiết dạy hoặc quy đổi thành tiết dạy được quy định tại thông tư 05/2005/TT-BGDĐT, ngày 07/03/2025, phải kèm theo minh chứng (quyết định, chứng từ... hợp pháp). Các chức danh mà giáo viên kiêm nhiệm không được quy", 23);
+  set("A76", "- Các chức danh mà giáo viên kiêm nhiệm được giảm định mức tiết dạy hoặc quy đổi thành tiết dạy được quy định tại thông tư 05/2025/TT-BGDĐT, phải kèm theo minh chứng (quyết định, chứng từ... hợp pháp). Các chức danh mà giáo viên kiêm nhiệm không được quy", 23);
   set("A77", "- BGH, Tổ trưởng có trách nhiệm kiểm tra việc kê khai của GV.", 23);
   set("A78", '- Số tiết thừa phải ghi dấu "+" phía trước, số tiết thiếu phải ghi dấu "-" phía trước.', 23);
   set("A79", "- Cột (5) = cột (3) + cột (4); cột (8) = cột (6) - cột (7); cột (9) = cột (5) - cột (8); cột (10) = cột (5) - cột (8).", 23);
