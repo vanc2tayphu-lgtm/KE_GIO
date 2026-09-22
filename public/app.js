@@ -317,19 +317,55 @@ function weeksForMonth(month) {
   return weeks.filter((week) => week.start <= monthEndStr && week.end >= monthStartStr);
 }
 
+
+function getWeekEndOptions(startDateStr, currentEndDateStr) {
+  const d = dateOnly(startDateStr);
+  const addDays = (num) => {
+    const next = new Date(d);
+    next.setDate(next.getDate() + num);
+    return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
+  };
+
+  const fri = addDays(4); // Thứ 5 học / Thứ Sáu
+  const sat = addDays(5); // Thứ 6 học / Thứ Bảy (12/09)
+  const sun = addDays(6); // Thứ 7 học / Chủ Nhật (13/09)
+
+  const options = [
+    { value: sat, label: `${formatShortDate(sat)} (T6)` },
+    { value: sun, label: `${formatShortDate(sun)} (T7)` },
+    { value: fri, label: `${formatShortDate(fri)} (T5)` }
+  ];
+
+  if (currentEndDateStr && !options.some((o) => o.value === currentEndDateStr)) {
+    options.unshift({ value: currentEndDateStr, label: `${formatShortDate(currentEndDateStr)}` });
+  }
+
+  return options;
+}
+
 function defaultEntries() {
-  return weeksForMonth(state.month).map((week) => ({
-    key: `${week.n || "holiday"}:${week.start}`,
-    n: week.n,
-    start: week.start,
-    end: week.end,
-    status: week.holiday ? "holiday" : "teaching",
-    content: week.holiday ? week.note : state.profile.assignment,
-    regular: week.holiday ? 0 : "",
-    extra: 0,
-    reduction: 0,
-    note: week.note || ""
-  }));
+  const rule = localStorage.getItem("ke-gio:week-end-rule") || "sun";
+  const daysToAdd = rule === "sat" ? 5 : rule === "fri" ? 4 : 6;
+
+  return weeksForMonth(state.month).map((week) => {
+    const dStart = dateOnly(week.start);
+    const dEnd = new Date(dStart);
+    dEnd.setDate(dEnd.getDate() + daysToAdd);
+    const customEnd = `${dEnd.getFullYear()}-${String(dEnd.getMonth() + 1).padStart(2, "0")}-${String(dEnd.getDate()).padStart(2, "0")}`;
+
+    return {
+      key: `${week.n || "holiday"}:${week.start}`,
+      n: week.n,
+      start: week.start,
+      end: customEnd,
+      status: week.holiday ? "holiday" : "teaching",
+      content: week.holiday ? week.note : state.profile.assignment,
+      regular: week.holiday ? 0 : "",
+      extra: week.holiday ? 0 : "",
+      reduction: 0,
+      note: week.note || ""
+    };
+  });
 }
 
 function loadCurrentRecord() {
@@ -1099,13 +1135,25 @@ function renderWeeks() {
   rows.forEach((row, index) => {
     const tr = document.createElement("tr");
     tr.className = row.status === "holiday" ? "status-holiday" : row.status === "no_report" ? "status-no-report" : "";
-    
-    // Calculate display values
-    const [year, mm] = state.month.split("-");
-    const dStart = dateOnly(row.start);
-    const dEnd = dateOnly(row.end);
-    const timeLabel = `${row.n ? `Tuần ${row.n}` : "Nghỉ"}<br><span style="font-size:12px; color:var(--muted);">Từ ${String(dStart.getDate()).padStart(2, '0')}/${String(dStart.getMonth() + 1).padStart(2, '0')}<br>Đến ${String(dEnd.getDate()).padStart(2, '0')}/${String(dEnd.getMonth() + 1).padStart(2, '0')}</span>`;
-    
+
+    const endOptions = getWeekEndOptions(row.start, row.end);
+    const optionsHtml = endOptions
+      .map((opt) => `<option value="${opt.value}"${opt.value === row.end ? " selected" : ""}>${opt.label}</option>`)
+      .join("");
+
+    const timeLabel = `
+      <div class="week-time-cell">
+        <strong>${row.n ? `Tuần ${row.n}` : "Nghỉ"}</strong>
+        <span class="time-from">Từ ${formatShortDate(row.start)}</span>
+        <div class="time-to-row">
+          <span>Đến</span>
+          <select class="week-end-select" data-week-index="${index}" title="Chọn ngày kết thúc tuần">
+            ${optionsHtml}
+          </select>
+        </div>
+      </div>
+    `;
+
     const surplusDisplay = row.diff > 0 ? formatNumber(row.diff) : "";
     const shortageDisplay = row.diff < 0 ? formatNumber(Math.abs(row.diff)) : "";
 
@@ -1156,6 +1204,17 @@ function renderWeeks() {
       input.addEventListener("change", () => {
         updateEntry();
         renderAll();
+      });
+    });
+
+    tr.querySelectorAll(".week-end-select").forEach((sel) => {
+      sel.addEventListener("change", (e) => {
+        const idx = Number(e.target.dataset.weekIndex);
+        if (state.entries[idx]) {
+          state.entries[idx].end = e.target.value;
+          saveCurrentRecord();
+          renderPreview();
+        }
       });
     });
 
@@ -1227,7 +1286,7 @@ function renderPreview() {
         <span class="meta-teacher-label">Họ tên giáo viên :</span><strong class="meta-teacher-name">${escapeHtml(state.profile.name)}</strong>
         <span class="meta-subject-label">Môn :</span><strong class="meta-subject-name">${escapeHtml(state.profile.subject)}</strong>
         <span class="meta-assignment-label">Phân công lớp dạy (cột 3) :</span><span class="meta-assignment-value">${escapeHtml(state.profile.assignment)}</span>
-        <span class="meta-total-label">Tổng số tiết dạy :</span><span class="meta-total-value">${formatNumber(lastWeekRegularTeaching)}</span>
+        <span class="meta-total-label">Tổng số tiết dạy :</span><span class="meta-total-value">${formatNumber(totals.actual)}</span>
       </div>
 
       <div class="mau-line">Kiêm nhiệm : (cột 7)</div>
@@ -2331,6 +2390,25 @@ function refreshElements() {
 }
 
 function init() {
+
+  const weekEndRuleSelect = document.querySelector("#weekEndRuleSelect");
+  const savedWeekEndRule = localStorage.getItem("ke-gio:week-end-rule") || "sun";
+  if (weekEndRuleSelect) {
+    weekEndRuleSelect.value = savedWeekEndRule;
+    weekEndRuleSelect.addEventListener("change", () => {
+      const rule = weekEndRuleSelect.value;
+      localStorage.setItem("ke-gio:week-end-rule", rule);
+      const daysToAdd = rule === "sat" ? 5 : rule === "fri" ? 4 : 6;
+      state.entries.forEach((entry) => {
+        const dStart = dateOnly(entry.start);
+        const dEnd = new Date(dStart);
+        dEnd.setDate(dEnd.getDate() + daysToAdd);
+        entry.end = `${dEnd.getFullYear()}-${String(dEnd.getMonth() + 1).padStart(2, "0")}-${String(dEnd.getDate()).padStart(2, "0")}`;
+      });
+      saveCurrentRecord();
+      renderAll();
+    });
+  }
 
   const schoolYearSelect = document.querySelector("#schoolYearSelect");
   const savedSchoolYear = localStorage.getItem("ke-gio:school-year") || "2026-2027";
